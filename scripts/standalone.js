@@ -1,0 +1,14 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import path from 'node:path';
+const directory='dist';
+let html=await readFile(path.join(directory,'index.html'),'utf8');
+const script=html.match(/<script\b[^>]*src="([^"]+)"[^>]*><\/script>/);
+const style=html.match(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/);
+if(!script||!style)throw Error('Missing bundle in compiled page');
+const js=await readFile(path.join(directory,script[1]),'utf8');
+const css=await readFile(path.join(directory,style[1]),'utf8');
+const license=await readFile('public/licenses/three.txt','utf8');
+html=html.replace(script[0],()=>'<script type="module">\n/* Three.js\n'+license+'*/\n'+js.replace(/<\/script/gi,'<\\/script')+'\n</script>');
+html=html.replace(style[0],()=>'<style>'+css+'</style>');
+await mkdir('docs/demo',{recursive:true});
+await writeFile('docs/demo/choi-ngay.html',html);
