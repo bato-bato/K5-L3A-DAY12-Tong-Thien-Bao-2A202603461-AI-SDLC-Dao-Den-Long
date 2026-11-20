@@ -16,7 +16,7 @@ test('declared CLI writes deterministic JSONL and handles invalid files atomical
     const args=['--scenario',scenario,'--inputs',input];
     assert.equal(call(...args).status,0);
     const bytes=readFileSync(output,'utf8'),rows=bytes.trimEnd().split('\n').map(JSON.parse);
-    assert.deepEqual(rows.map(r=>r.type),['snapshot','event','snapshot','end']);assert.deepEqual(rows[2].player.pos,[0,0,.2]);
+    assert.deepEqual(rows.map(r=>r.type),['snapshot','event','event','snapshot','end']);assert.deepEqual(rows[3].player.pos,[0,0,.2]);
     assert.equal(call(...args).status,0);assert.equal(readFileSync(output,'utf8'),bytes);
     for(const bad of ['{', '{"frames":[{"tick":2},{"tick":2}]}','{"frames":[{"tick":0,"move":[2,0]}]}','{"frames":[{"tick":0,"pulse":1}]}']){
       writeFileSync(input,bad);const result=call(...args);assert.equal(result.status,2);assert.ok(result.stderr);assert.equal(readFileSync(output,'utf8'),bytes);

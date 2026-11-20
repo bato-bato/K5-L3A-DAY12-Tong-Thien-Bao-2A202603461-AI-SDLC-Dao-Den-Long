@@ -1,0 +1,383 @@
+{
+  "dash": {
+    "n": 1,
+    "ticks": 14,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false
+    },
+    "frames": [
+      {
+        "tick": 0,
+        "dash": true
+      },
+      {
+        "tick": 12,
+        "dash": false
+      }
+    ]
+  },
+  "airDash": {
+    "n": 1,
+    "ticks": 20,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false
+    },
+    "frames": [
+      {
+        "tick": 0,
+        "jump": true
+      },
+      {
+        "tick": 4,
+        "dash": true
+      }
+    ]
+  },
+  "pause": {
+    "n": 3,
+    "ticks": 75,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "pos": [
+          5,
+          6,
+          0
+        ],
+        "invuln_ticks": 60,
+        "charm_ticks": 60,
+        "pulse_cd_ticks": 60
+      }
+    },
+    "frames": [
+      {
+        "tick": 0,
+        "pause": true
+      },
+      {
+        "tick": 10,
+        "pause": false
+      },
+      {
+        "tick": 70,
+        "pause": true
+      }
+    ]
+  },
+  "fall": {
+    "n": 1,
+    "ticks": 63,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "pos": [
+          42,
+          -10.1,
+          0
+        ],
+        "invuln_ticks": 99,
+        "carried": 8
+      }
+    },
+    "frames": []
+  },
+  "bridge": {
+    "n": 2,
+    "ticks": 400,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "pos": [
+          25,
+          0,
+          0
+        ]
+      },
+      "charms": []
+    },
+    "frames": [
+      {
+        "tick": 0,
+        "move": [
+          1,
+          0
+        ]
+      }
+    ]
+  },
+  "pad": {
+    "n": 2,
+    "ticks": 90,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "pos": [
+          20,
+          0,
+          18
+        ]
+      }
+    },
+    "frames": [
+      {
+        "tick": 5,
+        "move": [
+          -1,
+          1
+        ]
+      }
+    ]
+  },
+  "bellPad": {
+    "n": 3,
+    "ticks": 70,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "pos": [
+          0,
+          3,
+          13
+        ]
+      }
+    },
+    "frames": []
+  },
+  "ramp": {
+    "n": 3,
+    "ticks": 90,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "pos": [
+          25.98076211353316,
+          0,
+          15
+        ]
+      }
+    },
+    "frames": [
+      {
+        "tick": 0,
+        "move": [
+          -0.8660254037844387,
+          -0.5
+        ]
+      }
+    ]
+  },
+  "wind": {
+    "n": 3,
+    "ticks": 2100,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": true,
+      "player": {
+        "pos": [
+          20,
+          0,
+          -20
+        ]
+      }
+    },
+    "frames": []
+  },
+  "steal": {
+    "n": 2,
+    "ticks": 5,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "carried": 8,
+        "invuln_ticks": 80
+      },
+      "drifters": [
+        {
+          "id": "D1",
+          "pos": [
+            0.8,
+            0.8,
+            0
+          ],
+          "state": "idle"
+        }
+      ]
+    },
+    "frames": [
+      {
+        "tick": 1,
+        "pulse": true
+      }
+    ]
+  },
+  "flee": {
+    "n": 2,
+    "ticks": 242,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "carried": 8
+      },
+      "drifters": [
+        {
+          "id": "D1",
+          "pos": [
+            3,
+            0.8,
+            0
+          ],
+          "state": "chase"
+        }
+      ]
+    },
+    "frames": [
+      {
+        "tick": 0,
+        "pulse": true
+      }
+    ]
+  },
+  "charm": {
+    "n": 2,
+    "ticks": 625,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "player": {
+        "pos": [
+          35,
+          0,
+          0
+        ]
+      }
+    },
+    "frames": [
+      {
+        "tick": 1,
+        "dash": true,
+        "move": [
+          1,
+          0
+        ]
+      },
+      {
+        "tick": 3,
+        "dash": false
+      },
+      {
+        "tick": 4,
+        "dash": true
+      },
+      {
+        "tick": 14,
+        "dash": false
+      },
+      {
+        "tick": 15,
+        "dash": true
+      },
+      {
+        "tick": 20,
+        "move": [
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "spawns": {
+    "n": 2,
+    "ticks": 2400,
+    "scenario": {
+      "player": {
+        "pos": [
+          35,
+          0,
+          0
+        ]
+      },
+      "random_motes": true
+    },
+    "frames": []
+  },
+  "priority": {
+    "n": 1,
+    "ticks": 1,
+    "scenario": {
+      "random_motes": false,
+      "random_shades": false,
+      "random_drifters": false,
+      "wind_enabled": false,
+      "time_left_s": 0.016666666666666666,
+      "player": {
+        "carried": 10
+      },
+      "lanterns": [
+        {
+          "id": "L1",
+          "lit": true
+        },
+        {
+          "id": "L2",
+          "lit": true
+        },
+        {
+          "id": "L3",
+          "lit": true
+        },
+        {
+          "id": "L4",
+          "lit": true
+        },
+        {
+          "id": "L5",
+          "pos": [
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "frames": [
+      {
+        "tick": 0,
+        "interact": true
+      }
+    ]
+  }
+}

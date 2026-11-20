@@ -1,51 +1,20 @@
-# Đảo Đèn Lồng
+# Đảo Đèn Lồng · Ba hòn đảo
 
-[Video demo MP4](docs/demo/demo.mp4) · [Bản chơi offline](docs/demo/choi-ngay.html) · [Bản web ZIP](docs/demo/dao-den-long-web.zip)
+[Mở bản chơi offline](docs/demo/choi-ngay.html) · [Tải bản web ZIP](docs/demo/dao-den-long-web.zip) · [Bằng chứng Phase 2](docs/proof/phase2) · [Video của Phase 1](docs/demo/demo.mp4)
 
-**Phase 1 · Đêm 1, Đảo Bến.** Mây có năm phút và ba ngọn lửa để thắp năm Đèn Lồng Lớn trên đảo. Gom đom đóm, chọn giữa nạp đèn và tỏa sáng, rồi tìm đường về vùng sáng an toàn.
+Tải tệp HTML và mở trong Chrome hoặc Edge. Nếu chạy từ mã nguồn, dùng Node 22.12 trở lên, chạy `npm ci` rồi `npm run dev` và mở địa chỉ được in ra.
 
-## Chơi trên máy
+Qua ba đêm trước bình minh. Đảo Bến có 5 đèn, Đảo Cau có 6 và Đảo Chuông có 7. WASD hoặc phím mũi tên để đi, kéo chuột để xoay camera, Space để nhảy, Shift để lướt, E để nạp và F để tỏa sáng. Esc hoặc P để tạm dừng. Mỗi đèn nhận 10 đom đóm qua một hoặc nhiều lần nạp. Tỏa sáng tốn 3 con. Điểm mỗi đêm gồm 10 cho mỗi con nạp, 100 mỗi đèn thắp và 5 cho mỗi Bóng Mực trúng xung. Khi thắng, cộng hai lần số giây nguyên còn lại và 50 mỗi ngọn lửa còn giữ.
 
-Tải `docs/demo/choi-ngay.html` về máy, mở bằng Chrome hoặc Edge rồi chọn **Vào đảo**. Để chạy từ mã nguồn trên Windows, Linux hoặc macOS, dùng Node.js 22.12 trở lên, chạy hai lệnh dưới đây trong repo rồi mở địa chỉ mà Vite in ra.
-
-```sh
-npm ci
-npm run dev
-```
-
-| Thao tác | Điều khiển |
-| --- | --- |
-| Đi, nhảy | WASD / các phím mũi tên, Space để nhảy. |
-| Gom đom đóm | Đến gần, túi mang tối đa 6 con. |
-| Nạp đèn | Nhấn E khi ở gần. Có thể nạp nhiều lần, mỗi đèn sáng khi nhận đủ 3 con. |
-| Tỏa sáng | Nhấn F để dùng 1 con, đẩy lùi và làm choáng Bóng Mực trong 6 m. |
-| Tạm dừng, chơi lại | Esc để tạm dừng. Màn kết quả có nút chơi lại. Màn hình cảm ứng có nút riêng. |
-
-Bóng Mực đuổi Mây. Chạm một lần làm mất một lửa và cho Mây hai giây miễn sát thương. Vùng 3 m quanh đèn đã thắp là nơi trú. Thắng khi cả năm đèn sáng. Hết lửa hoặc đến bình minh thì thua.
-
-**Điểm** cộng 10 cho mỗi đom đóm nhặt được, 100 cho mỗi đèn mới thắp và 15 cho mỗi Bóng Mực trúng xung sáng. Khi thắng, cộng 2 cho mỗi giây nguyên còn lại và 50 cho mỗi lửa đang giữ. Các tham số máy chấm đọc nằm trong [game.contract.json](game.contract.json).
-
-## Chạy Test Contract v1.0
-
-Lệnh sau phát lại một lượt đi hết Đảo Bến trên bản đồ mặc định, ghi JSONL vào đường dẫn chỉ định. Node chạy mô phỏng độc lập với DOM và GPU.
+## Kiểm chứng
 
 ```sh
-node scripts/headless.js --seed 12 --night 1 --inputs scenarios/restore-island.json --ticks 18000 --out night1.jsonl --snapshot-every 60
+npm run verify
+node scripts/headless.js --seed 12 --night 2 --inputs scenarios/phase2/night2-win.json --ticks 19800 --out night2.jsonl
+node scripts/verify-phase2.js
 ```
 
-Có thể bỏ `--inputs` để nhân vật đứng yên và bỏ `--scenario` để dùng bản đồ mặc định. `--snapshot-every` mặc định là 10. Ví dụ riêng để kiểm tra xung sáng và thời gian choáng:
-
-```sh
-node scripts/headless.js --seed 12 --night 1 --scenario scenarios/pulse.json --inputs scenarios/pulse-inputs.json --ticks 150 --out pulse.jsonl
-```
-
-`npm run verify` chạy test và build. `node scripts/browser-check.js` mở bản HTML offline trong Chrome, điều khiển bằng bàn phím và tái tạo bằng chứng giao diện. [Log lượt thắng](docs/proof/night1.jsonl) · [Log xung sáng](docs/proof/pulse.jsonl) · [Kết quả test](docs/proof/tests.txt) · [Giả định, đánh giá và nhật ký AI](docs/development.md).
-
-## Sáng tạo của tôi
-
-Mây đội nón lá có chiếc đèn nhỏ treo trên vành. Đảo có cầu gỗ, biển mây và đèn giấy treo bên bến. Mỗi đèn được thắp sẽ xuất hiện quầng sáng và làm cảnh đêm sáng thêm. Màn hình và âm thanh đọc trạng thái từ cùng mô phỏng với CLI. [Ảnh đầu đêm](docs/proof/menu.jpg) · [Ảnh chiến thắng](docs/proof/won.jpg) · [Nguồn và giấy phép](CREDITS.md).
-
----
+Lệnh thứ hai chạy một lượt thắng từ bản đồ mặc định. CLI nhận Đêm 1–3, scenario, frames và chu kỳ snapshot theo [manifest v1.1](game.contract.json). Chạy `node scripts/browser-check.js` sau khi build để đo FPS thật và kiểm tra cài đặt, rồi `node scripts/check-campaign.js` để kiểm tra chuyển cảnh trong Chrome. [Tiêu chí nghiệm thu Phase 2](docs/phase2.md).
 
 # Day 12 — AI SDLC: Đảo Đèn Lồng
 

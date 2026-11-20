@@ -17,9 +17,9 @@ function options(args){
     if(!/^-?\d+$/.test(v??'')||!Number.isSafeInteger(Number(v))||Number(v)<min)throw Error('Invalid or missing '+flag);
     return Number(v);
   }
-  if(integer('--night',1)!==1)throw Error('Only Night 1 is available');
+  const night=integer('--night',1);if(night>3)throw Error('Invalid night');
   if(!values.has('--out'))throw Error('Missing --out');
-  return {seed:integer('--seed',Number.MIN_SAFE_INTEGER),ticks:integer('--ticks',0),snapshotEvery:integer('--snapshot-every',1,10),
+  return {night,seed:integer('--seed',Number.MIN_SAFE_INTEGER),ticks:integer('--ticks',0),snapshotEvery:integer('--snapshot-every',1,10),
     output:values.get('--out'),inputFile:values.get('--inputs'),scenarioFile:values.get('--scenario')};
 }
 function jsonFile(file,fallback){
@@ -31,7 +31,7 @@ function run(){
   let config,inputs;
   try {
     config=jsonFile(args.scenarioFile,{});inputs=jsonFile(args.inputFile,{frames:[]});
-    validateScenario(config);validateInputs(inputs);
+    validateScenario(config,args.night);validateInputs(inputs);
   }catch(error){process.exitCode=2;throw error;}
   const temp=args.output+'.'+randomUUID()+'.tmp';
   const fd=openSync(temp,'wx');

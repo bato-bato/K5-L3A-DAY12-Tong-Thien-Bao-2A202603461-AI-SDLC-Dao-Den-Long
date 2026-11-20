@@ -1,0 +1,33 @@
+{
+  "platform": "win32",
+  "release": "10.0.26200",
+  "cpu": "Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz",
+  "node": "v26.13.1",
+  "scenario": "Default spawns and wind; 400 starting flames to keep the entire night running.",
+  "runs": [
+    {
+      "night": 1,
+      "ticks": 18000,
+      "elapsed_ms": 241,
+      "snapshot_every": 10,
+      "rows": 1999,
+      "sha256": "2535a0670ef2bff57c2166d4db2ef3198cf138219f680d5df4ad04cd44e8ca73"
+    },
+    {
+      "night": 2,
+      "ticks": 19800,
+      "elapsed_ms": 310,
+      "snapshot_every": 10,
+      "rows": 2203,
+      "sha256": "b64b1e693a1da6a4d16a5268a91059ae1857868a39a4e1a34726512ce2e23359"
+    },
+    {
+      "night": 3,
+      "ticks": 21600,
+      "elapsed_ms": 434,
+      "snapshot_every": 10,
+      "rows": 2408,
+      "sha256": "7db60cbcd8e00fefd778b09dfd0c0bf5add6b1769c5eea1cbae29016cb1175f0"
+    }
+  ]
+}

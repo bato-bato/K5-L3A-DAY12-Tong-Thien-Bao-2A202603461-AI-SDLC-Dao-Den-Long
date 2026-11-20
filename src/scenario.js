@@ -21,19 +21,36 @@ function list(obj,key,check) {
   if(!Array.isArray(obj[key]))throw Error('invalid '+key);
   obj[key].forEach(check);
 }
-export function validateScenario(config) {
+export function validateScenario(config,night=1) {
   object(config,'scenario');
-  for(const key of ['random_motes','random_shades'])if(key in config)bool(config[key],key);
+  for(const key of ['random_motes','random_shades','random_drifters','wind_enabled'])if(key in config)bool(config[key],key);
   if('time_left_s' in config)number(config.time_left_s,'time_left_s',0);
   if('player' in config) {
     const p=config.player;object(p,'player');
     if('pos' in p)vector(p.pos,3,'player.pos');
     if('carried' in p)count(p.carried,'player.carried',tuning.carry_capacity);
+    for(const k of ['invuln_ticks','dash_cd_ticks','pulse_cd_ticks','charm_ticks'])if(k in p)count(p[k],k);
     if('flames' in p)count(p.flames,'player.flames');
   }
   const lampIds=new Set(),shadeIds=new Set();
+  const drifterIds=new Set(),charmIds=new Set();
+  function checkId(entity,ids){if('id' in entity){if(typeof entity.id!=='string'||!entity.id||ids.has(entity.id))throw Error('invalid or duplicate id');ids.add(entity.id);}}
+  list(config,'drifters',d=>{
+    object(d,'drifter');checkId(d,drifterIds);vector(d.pos,3,'drifter.pos');
+    if('state' in d&&!['idle','chase','flee','removed'].includes(d.state))throw Error('invalid drifter state');
+    if('stolen' in d)count(d.stolen,'stolen');
+    if('state_ticks_left' in d)count(d.state_ticks_left,'state_ticks_left');
+  });
+  list(config,'charms',c=>{
+    object(c,'charm');checkId(c,charmIds);if('pos' in c)vector(c.pos,3,'charm.pos');
+    if('available' in c)bool(c.available,'available');
+    if('respawn_s' in c)number(c.respawn_s,'respawn_s',0);
+    if('respawn_ticks' in c)count(c.respawn_ticks,'respawn_ticks');
+  });
   list(config,'motes',pos=>vector(pos,3,'mote position'));
   list(config,'shades',s=>{
+    if('state' in s&&!['spawning','wander','chase','recoil','stunned'].includes(s.state))throw Error('invalid shade state');
+    if('state_ticks_left' in s)count(s.state_ticks_left,'state_ticks_left');
     object(s,'shade');vector(s.pos,3,'shade.pos');
     if('id' in s){
       if(typeof s.id!=='string'||!s.id.length||shadeIds.has(s.id))throw Error('invalid shade id');
@@ -42,7 +59,7 @@ export function validateScenario(config) {
   });
   list(config,'lanterns',l=>{
     object(l,'lantern');
-    if(!/^L[1-5]$/.test(l.id)||lampIds.has(l.id))throw Error('invalid lantern id');
+    if(!/^L[1-7]$/.test(l.id)||Number(l.id.slice(1))>4+night||lampIds.has(l.id))throw Error('invalid lantern id');
     lampIds.add(l.id);
     if('pos' in l)vector(l.pos,3,'lantern.pos');
     if('deposited' in l)count(l.deposited,'deposited',tuning.lantern_cost);
@@ -57,6 +74,6 @@ export function validateInputs(inputs) {
     if(f.tick<=previous)throw Error('frame ticks must strictly increase');previous=f.tick;
     if('move' in f){vector(f.move,2,'move');f.move.forEach(v=>number(v,'move',-1,1));}
     if('cam_yaw_deg' in f)number(f.cam_yaw_deg,'cam_yaw_deg');
-    for(const key of ['interact','pulse','jump','dash'])if(key in f)bool(f[key],key);
+    for(const key of ['interact','pulse','jump','dash','pause'])if(key in f)bool(f[key],key);
   }
 }
