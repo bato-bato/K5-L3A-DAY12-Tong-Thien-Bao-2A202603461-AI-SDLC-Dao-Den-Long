@@ -1,20 +1,19 @@
-# Đảo Đèn Lồng · Ba hòn đảo
+# Đảo Đèn Lồng · Đèn cạn dầu
 
-[Mở bản chơi offline](docs/demo/choi-ngay.html) · [Tải bản web ZIP](docs/demo/dao-den-long-web.zip) · [Bằng chứng Phase 2](docs/proof/phase2) · [Video của Phase 1](docs/demo/demo.mp4)
+[Bản chơi offline](docs/demo/choi-ngay.html) · [Ảnh Mây hệ sét trong game](docs/proof/phase3/may-he-set.jpg) · [Quyết định thiết kế và thay đổi](docs/phase3.md)
 
-Tải tệp HTML và mở trong Chrome hoặc Edge. Nếu chạy từ mã nguồn, dùng Node 22.12 trở lên, chạy `npm ci` rồi `npm run dev` và mở địa chỉ được in ra.
+Mở file HTML bằng Chrome hoặc Edge. Để chạy từ mã nguồn, dùng Node 22.12 trở lên, chạy `npm ci` rồi `npm run dev`.
 
-Qua ba đêm trước bình minh. Đảo Bến có 5 đèn, Đảo Cau có 6 và Đảo Chuông có 7. WASD hoặc phím mũi tên để đi, kéo chuột để xoay camera, Space để nhảy, Shift để lướt, E để nạp và F để tỏa sáng. Esc hoặc P để tạm dừng. Mỗi đèn nhận 10 đom đóm qua một hoặc nhiều lần nạp. Tỏa sáng tốn 3 con. Điểm mỗi đêm gồm 10 cho mỗi con nạp, 100 mỗi đèn thắp và 5 cho mỗi Bóng Mực trúng xung. Khi thắng, cộng hai lần số giây nguyên còn lại và 50 mỗi ngọn lửa còn giữ.
+Giữ Mây sống đến bình minh với ít nhất **3/5, 4/6, 5/7** đèn sáng lần lượt ở Đêm 1, 2, 3. Mỗi đèn sáng hết 1 dầu mỗi giây. Dưới 30 dầu, Bóng Mực có thể vào hút thêm. Dùng WASD để đi, Space nhảy, Shift lướt, E nạp điện hoặc châm dầu, F tỏa sáng. Bật **Bảng màu dễ phân biệt** trong Cài đặt để đổi màu cảnh báo và Bóng Mực.
 
-## Kiểm chứng
+Đèn mới cần 10 đom đóm, đèn từng sáng cần 5 để thắp lại. Một đom đóm châm được 10 dầu. Túi tăng 2 chỗ mỗi lần thắp thành công, tối đa 20. Nạp một con được 5 điểm, thắp lần đầu thêm 100, thắp lại thêm 40. Xung sáng được 5 điểm mỗi mục tiêu, hoặc 15 nếu nó đang hút dầu. Khi thắng, mỗi đèn sáng cho 50 cộng phần nguyên số dầu và mỗi lửa còn lại cho 50 điểm.
 
 ```sh
 npm run verify
-node scripts/headless.js --seed 12 --night 2 --inputs scenarios/phase2/night2-win.json --ticks 19800 --out night2.jsonl
-node scripts/verify-phase2.js
+node scripts/headless.js --night 1 --seed 12 --ticks 120 --scenario scenarios/dawn.json --out dawn.jsonl
 ```
 
-Lệnh thứ hai chạy một lượt thắng từ bản đồ mặc định. CLI nhận Đêm 1–3, scenario, frames và chu kỳ snapshot theo [manifest v1.1](game.contract.json). Chạy `node scripts/browser-check.js` sau khi build để đo FPS thật và kiểm tra cài đặt, rồi `node scripts/check-campaign.js` để kiểm tra chuyển cảnh trong Chrome. [Tiêu chí nghiệm thu Phase 2](docs/phase2.md).
+[Contract v1.2](game.contract.json) · [Bằng chứng Phase 3](docs/proof/phase3/) · [Tài liệu Phase 2](docs/phase2.md)
 
 # Day 12 — AI SDLC: Đảo Đèn Lồng
 

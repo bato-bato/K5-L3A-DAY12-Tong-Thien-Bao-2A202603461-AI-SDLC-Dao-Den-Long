@@ -12,7 +12,7 @@ function translate(s,actor,dx,dz){
  p[0]=nx;p[2]=nz;p[1]+=floor-old;
 }
 function protectedLamp(s,pos){
- return s.lanterns.find(l=>l.lit&&planar(l.pos,pos)<6-eps);
+ return s.lanterns.find(l=>l.oil>=1800&&planar(l.pos,pos)<6-eps);
 }
 export function pulse(s){
  const p=s.player;
@@ -22,6 +22,7 @@ export function pulse(s){
  const stunned_ids=[];
  for(const sh of s.shades){
   if(!hit(sh))continue;
+  if(sh.state==='drain')s.score+=10;
   sh.state='stunned';sh.left=120;sh.push=15;sh.dir=direction(p.pos,sh.pos);
   stunned_ids.push(sh.id);
  }
@@ -43,29 +44,41 @@ function shadeMove(s,sh){
  const p=s.player,old=[...sh.pos];
  if(sh.state==='spawning'&&!sh.left)sh.state='wander';
  if(sh.state==='stunned'&&!sh.left)sh.state='wander';
+ let released=false;
+ if(sh.state==='drain'){
+  const l=s.lanterns.find(l=>l.id===sh.target);
+  if(!l?.lit||l.oil>=1800||planar(l.pos,sh.pos)>2){sh.state='wander';released=true;}
+  else if(!p.respawn&&planar(p.pos,sh.pos)<=6)sh.state='chase';
+ }
+ if(sh.state==='drain')return;
  if(sh.state==='stunned'){
   if(sh.push>0){translate(s,sh,sh.dir[0]*4/15,sh.dir[1]*4/15);sh.push--;}
  }else if(sh.state==='recoil'){
   translate(s,sh,sh.dir[0]*2/60,sh.dir[1]*2/60);if(!sh.left)sh.state='wander';
  }else if(sh.state!=='spawning'){
   const d=planar(sh.pos,p.pos);
-  if(sh.state==='wander'&&d<=12&&!p.respawn)sh.state='chase';
+  if(sh.state==='wander'&&!released&&d<=12&&!p.respawn)sh.state='chase';
   if(sh.state==='chase'&&(d>18||p.respawn))sh.state='wander';
   const speed=s.night===3?4.5:4;
   if(sh.state==='chase'){
    const [x,z]=direction(sh.pos,p.pos),step=Math.min(d,speed/60);translate(s,sh,x*step,z*step);
   }else{
-   const a=sh.heading+.45*Math.sin(s.sim/100);translate(s,sh,Math.cos(a)*speed/60,Math.sin(a)*speed/60);
-   if(planar(old,sh.pos)<eps)sh.heading+=Math.PI*.63;
+   const weak=s.lanterns.filter(l=>l.lit&&l.oil<1800);
+   const target=(weak.length?weak:s.lanterns.filter(l=>!l.lit)).sort((a,b)=>planar(a.pos,sh.pos)-planar(b.pos,sh.pos))[0];
+   if(target&&!released){const [x,z]=direction(sh.pos,target.pos),d=planar(sh.pos,target.pos);
+    if(d>2||!target.lit)translate(s,sh,x*Math.min(d,speed/60),z*Math.min(d,speed/60));
+    if(target.lit&&planar(sh.pos,target.pos)<=2){sh.state='drain';sh.target=target.id;sh.drainTicks=0;}
+   }
   }
  }
+ if(sh.eject?.lamp.oil<1800)sh.eject=null;
  if(sh.eject){
   const {lamp,left}=sh.eject,d=planar(lamp.pos,sh.pos),[x,z]=direction(lamp.pos,sh.pos);
   if(d<6){const step=(6.00001-d)/left;sh.pos[0]+=x*step;sh.pos[2]+=z*step;}
   if(--sh.eject.left<=0||d>=6)sh.eject=null;
  }
  for(const l of s.lanterns){
-  if(!l.lit||sh.eject?.lamp===l)continue;
+  if(l.oil<1800||sh.eject?.lamp===l)continue;
   const d=planar(l.pos,sh.pos);
   if(d<6){const [x,z]=direction(l.pos,sh.pos);sh.pos[0]=l.pos[0]+6*x;sh.pos[2]=l.pos[2]+6*z;}
  }

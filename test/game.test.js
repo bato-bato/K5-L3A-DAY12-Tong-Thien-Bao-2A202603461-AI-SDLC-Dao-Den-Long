@@ -66,11 +66,11 @@ test('lit lantern keeps shades outside the safe radius and protects the player',
   advance(s,240);assert.ok(Math.hypot(s.shades[0].pos[0],s.shades[0].pos[2])>=tuning.safe_radius-1e-8);
   assert.equal(s.player.flames,tuning.flames);
 });
-test('fifth lamp ends at event tick with win bonuses and remaining time',()=>{
+test('fifth lamp stays lit until dawn; fuel determines the final bonus',()=>{
   const scenario={...quiet,player:{carried:1},time_left_s:10,lanterns:[...initialLamps,{id:'L5',pos:[0,0,0],deposited:9}]};
   const rows=run({scenario,frames:[{tick:0,interact:true}],ticks:999,snapshotEvery:1});
-  assert.deepEqual(rows.map(r=>r.name??r.type),['snapshot','night_start','deposit','lantern_lit','game_over','snapshot','end']);
-  assert.deepEqual(rows.at(-1),{type:'end',ticks:1,state:'won',score:tuning.score.per_mote+tuning.score.per_lantern+9*tuning.score.per_second_left+3*tuning.score.per_flame_left});
+  assert.equal(rows.find(r=>r.tick===1&&r.type==='snapshot').state,'playing');assert.equal(rows.find(r=>r.name==='game_over').data.reason,'dawn_survived');
+  assert.deepEqual(rows.at(-1),{type:'end',ticks:600,state:'won',score:105+5*(50+90)+150});
 });
 test('dawn stops the run early and end follows the scheduled final snapshot',()=>{
   const rows=run({scenario:{...quiet,time_left_s:1},ticks:100});
@@ -85,11 +85,11 @@ test('seeded spawns have stable unique ids, disabled generators stay empty',()=>
   assert.deepEqual(rows,run({scenario,ticks:1080,snapshotEvery:1080}));assert.notDeepEqual(rows,run({seed:19,scenario,ticks:1080,snapshotEvery:1080}));
   const s=create();advance(s,1080);assert.deepEqual([s.motes.length,s.shades.length],[0,0]);
 });
-test('full Night 1 can be won from the actual default map using only contract inputs',()=>{
-  const {frames}=JSON.parse(readFileSync(new URL('../scenarios/restore-island.json',import.meta.url)));
-  const rows=run({scenario:{},frames,ticks:18000,snapshotEvery:60});assert.equal(rows.at(-1).state,'won');
-  assert.equal(rows.filter(r=>r.name==='lantern_lit').length,5);assert.ok(rows.filter(r=>r.type==='snapshot').at(-1).player.flames>0);
-  assert.ok(rows.at(-1).ticks<18000);
+test('old route is evaluated until death or dawn under the replacement rule',()=>{
+ const {frames}=JSON.parse(readFileSync(new URL('../scenarios/restore-island.json',import.meta.url)));
+ const rows=run({scenario:{},frames,ticks:14400,snapshotEvery:60});
+ assert.ok(rows.some(r=>r.name==='lantern_lit'));assert.ok(rows.at(-1).ticks>rows.find(r=>r.name==='lantern_lit').tick);
+ assert.ok(['dawn','no_flames','dawn_survived'].includes(rows.find(r=>r.name==='game_over').data.reason));
 });
 test('snapshot coordinates round to three decimals without quantizing simulation',()=>{
   const s=create({player:{pos:[1.12349,0,-2.56789]}});assert.deepEqual(snapshot(s).player.pos,[1.123,0,-2.568]);

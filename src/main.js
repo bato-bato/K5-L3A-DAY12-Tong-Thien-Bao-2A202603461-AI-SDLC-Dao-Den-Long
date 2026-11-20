@@ -1,4 +1,4 @@
-import {createGame,step,nearestLantern,timeLeft,maps} from './game.js';
+import {capacity,createGame,step,nearestLantern,timeLeft,maps} from './game.js';
 import {makeWorld} from './world.js';
 const el=id=>document.getElementById(id);
 let draw;
@@ -30,7 +30,7 @@ function dialog(mode,title,body,actions){
 function home(){closeDialog();clear();screen='menu';game=createGame();total=0;yaw=0;hud();}
 function introduce(night){
  game=createGame(12,{},night);yaw=0;enableSound();
- const messages=['Nhặt đom đóm quanh bến và thắp năm đèn. Đèn sáng sẽ giữ Bóng Mực ở ngoài vùng an toàn.',
+ const messages=['Giữ ít nhất ba đèn sáng đến bình minh. Dầu dưới 30 khiến Bóng Mực có thể tới hút dầu.',
  'Qua cầu tre hoặc dùng bục nhảy để đến đảo bên kia. Giữ túi đom đóm khỏi Gió Lạc.',
  'Theo dốc lên tầng một, rồi dùng bục nhảy tới tháp chuông. Hãy để ý lá bay trước khi gió mạnh đến.'];
  dialog('intro','Đêm '+night+' · '+maps[night].name,'Ông Đăng nhắn: “'+messages[night-1]+'”',[['Vào đảo',()=>{closeDialog();screen='play';clear();hud();}]]);
@@ -50,7 +50,7 @@ function pause(){
 function settings(back){dialog('settings','Cài đặt','Kéo chuột ngang trên đảo để xoay camera.',[['Quay lại',back]]);}
 function help(){
  const fromMenu=screen==='menu';if(!fromMenu&&screen==='play')pause();
- dialog('help','Cách chơi','WASD di chuyển, Space nhảy, Shift lướt, E nạp đèn và F tỏa sáng. Kéo chuột để xoay góc nhìn. Một đèn cần 10 đom đóm. Tỏa sáng dùng 3 con.',
+ dialog('help','Cách chơi','WASD di chuyển, Space nhảy, Shift lướt, E nạp đèn và F tỏa sáng. Kéo chuột để xoay góc nhìn. Bấm E để châm dầu. Thắp lần đầu cần 10 con, thắp lại cần 5. Giữ ít nhất 60% số đèn sáng đến bình minh. Tỏa sáng dùng 3 con.',
  [['Đã hiểu',fromMenu?home:resume],['Cài đặt',()=>settings(fromMenu?home:pause)]]);
 }
 el('dialog').addEventListener('cancel',e=>{e.preventDefault();if(screen==='pause')resume();else if(screen==='settings')el('actions').firstElementChild.click();else if(screen==='help')el('actions').firstElementChild.click();});
@@ -68,12 +68,12 @@ function hud(){
  const play=screen==='play',menu=screen==='menu',p=game.player;
  el('game').className=menu?'menu':'play';el('menu').hidden=!menu;el('hud').hidden=menu;el('touch').hidden=!play;el('pause').hidden=!play;
  el('abilities').hidden=!play;el('legend').hidden=!menu;el('guide').hidden=true;
- el('count').textContent=game.lanterns.filter(l=>l.lit).length+' / '+game.lanterns.length;
- el('bag').textContent='◆'.repeat(p.carried)+'◇'.repeat(Math.max(0,10-p.carried));el('bag').title=p.carried+' / 10';el('bag').setAttribute('aria-label',p.carried+' trên 10 đom đóm');
+ el('count').textContent=game.lanterns.filter(l=>l.lit).length+' / '+game.lanterns.length+' · cần '+Math.ceil(.6*game.lanterns.length);
+ el('bag').textContent=p.carried+' / '+capacity(p);
  el('life').textContent='♥'.repeat(p.flames)+'♡'.repeat(Math.max(0,3-p.flames));el('score').textContent=game.score;
  const seconds=Math.ceil(timeLeft(game));el('timer').textContent=Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');el('timer').parentElement.classList.toggle('urgent',seconds<=30);
  const cd=n=>n?(n/60).toFixed(1)+'s':'✓';el('abilities').textContent='Shift · Lướt '+cd(p.dashCD)+'　 F · Tỏa sáng '+cd(p.pulseCD)+(p.charm?'　 Bùa '+Math.ceil(p.charm/60)+'s':'');
- const l=nearestLantern(game);const hint=l?'E – Nạp ánh sáng ('+l.deposited+'/10)':game.sim<flashUntil?flash:'';
+ const l=nearestLantern(game);const hint=l?(l.lit?'E – Châm dầu · '+Math.round(l.oil/60)+'/100':'E – Nạp ánh sáng ('+l.deposited+'/'+(l.ever_lit?5:10)+')'):game.sim<flashUntil?flash:'';
  el('prompt').textContent=hint;el('prompt').hidden=!play||!hint;
  const warn=game.night===3&&game.sim%1800>=1680;
  el('weather').hidden=!play||(!warn&&!game.wind.active);el('weather').textContent=warn?'❧　Lá bay · Gió sắp đến':'❧　Gió mạnh';
@@ -83,7 +83,7 @@ function gameplay(){
  const axis=(a,b)=>Number(held.has(a)||held.has(b));const down=k=>held.has(k)||taps.has(k);
  const events=step(game,{cam_yaw_deg:yaw,move:[axis('KeyD','ArrowRight')-axis('KeyA','ArrowLeft'),axis('KeyS','ArrowDown')-axis('KeyW','ArrowUp')],
   pause:false,jump:down('Space'),interact:down('KeyE'),pulse:down('KeyF'),dash:down('ShiftLeft')||down('ShiftRight')});taps.clear();
- if(game.jumped)tone(520);for(const e of events){if(fx[e.name])tone(fx[e.name]);if(e.name==='lantern_lit'||e.name==='player_hit'){flash=e.name==='lantern_lit'?'Đèn đã sáng':'Mây mất một ngọn lửa';flashUntil=game.sim+90;}}
+ if(game.jumped)tone(520);for(const e of events){if(['deposit','refuel'].includes(e.name))game.arc={id:e.data.lantern_id,tick:game.sim};if(fx[e.name])tone(fx[e.name]);if(e.name==='lantern_lit'||e.name==='player_hit'){flash=e.name==='lantern_lit'?'Đèn đã sáng':'Mây mất một ngọn lửa';flashUntil=game.sim+90;}}
  if(game.sim%60===0&&timeLeft(game)<=10)tone(960,.12);
  if(game.sim%180===1)tone([220,261.63,329.63,293.66][Math.floor(game.sim/180)%4],2.2,.035);
  if(game.night===3&&game.sim%1800===1680)tone(310,1.2,.12,'triangle');
@@ -95,8 +95,11 @@ function frame(t){
   bank+=dt;while(bank>=1/60){bank-=1/60;if(screen==='play')gameplay();else if(game.status==='paused')step(game,{pause:false});}
   hud();
  }
- const guide=draw?.(game,screen,t/1000,yaw);
+ game.accessible=el('palette').checked;const guide=draw?.(game,screen,t/1000,yaw);
  if(screen==='play'&&guide&&!guide.visible){el('guide').hidden=false;el('guide').innerHTML='<i>➤</i> '+guide.id;el('guide').firstChild.style.transform='rotate('+((Math.PI/2-guide.angle)*180/Math.PI)+'deg)';}
  requestAnimationFrame(frame);
 }
+el('palette').checked=setting('palette','off')==='on';
+function applyPalette(){document.body.classList.toggle('accessible',el('palette').checked);}
+el('palette').onchange=()=>{try{localStorage.setItem('lantern.palette',el('palette').checked?'on':'off');}catch{}applyPalette();};applyPalette();
 hud();requestAnimationFrame(frame);

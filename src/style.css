@@ -14,3 +14,4 @@
 #actions{display:flex;gap:8px;flex-wrap:wrap}#actions button{padding:9px 15px}#sliders label{display:block;margin:14px 0}#sliders input{display:block;width:100%}
 @media(max-width:940px){#legend{bottom:8px;font-size:11px;gap:5px}#abilities{bottom:95px}#hud>div:nth-child(2){bottom:47px}}
 @media(pointer:coarse){#abilities{bottom:132px}#hud>div:nth-child(2){bottom:105px}#prompt{bottom:180px}#touch>div:last-child{display:grid;grid-template-columns:repeat(2,48px)}}
+.accessible{--danger:#fff}.accessible .urgent strong:before,.accessible #weather:before{content:'⚠ '}.accessible #weather,.accessible #hud .urgent strong{color:#fff}#sliders input[type=checkbox]{display:inline;width:auto}

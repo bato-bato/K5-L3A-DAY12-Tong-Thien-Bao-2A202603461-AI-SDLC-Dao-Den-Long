@@ -106,6 +106,7 @@ export function makeWorld(canvas){
  const haloMat=new T.SpriteMaterial({map:new T.CanvasTexture(haloTexture),color:C.halo,blending:T.AdditiveBlending,depthWrite:false,transparent:true});
  const sprites=[];let used=0;
  function halo(x,y,z,size){if(!sprites[used]){sprites[used]=new T.Sprite(haloMat);scene.add(sprites[used]);}const g=sprites[used++];g.visible=true;g.position.set(x,y,z);g.scale.setScalar(size);}
+ const portraitLight=new T.DirectionalLight(0xffedda,2.1);portraitLight.position.set(3,4,5);scene.add(portraitLight);
  const mats={solid:new T.MeshLambertMaterial(),glow:new T.MeshBasicMaterial()};
  const backdrop=layer(scene,mats);
  backdrop.add('disc',C.sea,30,-4,0,175,1,175);
@@ -113,39 +114,76 @@ export function makeWorld(canvas){
  for(let i=0;i<260;i++){const a=i*2.399,h=.05+((i*173)%223)/245,r=140*Math.sqrt(1-h*h);backdrop.add('ball',C.fly,Math.cos(a)*r,h*140,Math.sin(a)*r,.11,.11,.11,0,0,0,true);}
  backdrop.flush();
  const actors=layer(scene,mats,true),put=actors.add,look=new T.Vector3(),target=new T.Vector3(),projected=new T.Vector3();
+ function bolt(start,end,tick){
+  let prev=new T.Vector3(...start);const up=new T.Vector3(0,1,0);
+  for(let i=1;i<=6;i++){
+   const u=i/6,next=new T.Vector3(...start).lerp(new T.Vector3(...end),u);
+   if(i<6){next.x+=.14*Math.sin(i*5+tick*.7);next.y+=.1*Math.cos(i*8+tick);}
+   const delta=next.clone().sub(prev),mid=prev.clone().lerp(next,.5);
+   const rot=new T.Euler().setFromQuaternion(new T.Quaternion().setFromUnitVectors(up,delta.clone().normalize()));
+   put('box',C.core,mid.x,mid.y,mid.z,.055,delta.length(),.055,rot.y,rot.x,rot.z,true);prev=next;
+  }
+ }
  let previousNight=0,disposeMap=()=>{},lastMode;
  function body(s,t){
   const p=s.player,[x,y,z]=p.pos;
   if(p.respawn||p.inv&&Math.floor(s.sim/6)%2)return;
   const yaw=s.facing,local=(dx,h,dz)=>[x+dx*Math.cos(yaw)+dz*Math.sin(yaw),y+h,z-dx*Math.sin(yaw)+dz*Math.cos(yaw)];
-  put('cone',C.coat,x,y+.78,z,.45,.9,.45,yaw);
-  put('ball',0xd4a17f,...local(0,1.35,0),.25,.3,.25,yaw);
-  put('cone',0xe4c386,...local(0,1.62,0),.57,.37,.57,yaw);
-  put('box',C.scarf,...local(0,1.1,-.16),.33,.12,.45,yaw);
-  put('ball',C.lit,...local(.43,1.32,0),.12,.17,.12,0,0,0,true);
-  for(const d of [-1,1])put('box',C.wood,...local(d*.15,.25,Math.sin(t*12)*d*Math.min(.14,Math.hypot(p.vel[0],p.vel[2])*.03)),.16,.47,.17,yaw);
+  const red=0xce201c,black=0x201c29,gold=0xffb526,white=0xfff4dc;
+  const part=(shape,c,dx,h,dz,sx,sy,sz,tilt=0)=>put(shape,c,...local(dx,h,dz),sx,sy,sz,yaw,0,tilt);
+  part('ball',black,0,.86,0,.38,.54,.26);part('ball',red,0,1.04,.05,.4,.24,.25);
+  part('ball',gold,0,1.04,.31,.15,.16,.05);part('box',white,0,1.04,.36,.055,.19,.025,-.55);
+  part('ball',0xe2ac8d,0,1.68,.03,.52,.52,.43);
+  for(const d of [-1,1]){
+   part('ball',white,d*.21,1.66,.401,.14,.096,.036,d*.2);part('ball',black,d*.20,1.66,.438,.063,.085,.023);
+   part('box',black,d*.21,1.77,.414,.25,.055,.035,d*.23);
+   part('ball',black,d*.43,.89,.02,.18,.23,.16);part('ball',red,d*.52,.67,.15,.225,.235,.23);
+   part('box',gold,d*.52,.69,.35,.27,.055,.035);
+   part('ball',black,d*.18,.40,0,.16,.25,.16);
+   part('box',gold,d*.18,.23,.20,.21,.06,.08);
+   part('ball',red,d*.18,.17,.08+.07*Math.sin(t*10)*d*Math.min(1,Math.hypot(...p.vel)),.19,.16,.28);
+  }
+  part('box',0x683d38,.055,1.47,.411,.16,.027,.022,.12);part('rock',0xd99673,0,1.60,.449,.047,.047,.059);
+  part('box',gold,-.02,.98,-.32,.26,.58,.09,-.25);part('ball',white,0,2,-.02,.52,.32,.44);
+  for(let i=0;i<9;i++){const angle=i*2.399,dx=.32*Math.cos(angle),dz=.27*Math.sin(angle);
+   part('cone',white,dx+.08,2.24+(i%3)*.08,dz,.23,.64,.21,-.35-dx*.6);
+   if(i%2===0)part('cone',red,dx+.09,2.19+(i%3)*.08,dz+.15,.115,.52,.095,-.42);
+  }
+  part('cone',0xe7bd78,0,1.64,-.39,.43,.22,.28,.24);
+  part('ball',C.lit,.33,1.48,-.42,.09,.13,.09);
+  if(p.carried){const hand=local(.54,.84,.41);halo(...hand,.7+p.carried*.035);put('rock',C.gold,...hand,.13,.21,.13,t,0,-.4,true);}
+
  }
  return function draw(s,mode,t,yaw=0){
   if(previousNight!==s.night){disposeMap();disposeMap=sceneMap(scene,s.night,mats);previousNight=s.night;lastMode=null;}
   const w=canvas.clientWidth,h=canvas.clientHeight;
   if(canvas.width!==w||canvas.height!==h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   const [x,y,z]=s.player.pos,menu=mode==='menu',eye=yaw*Math.PI/180;
-  if(menu){target.set(20,8,31);look.set(-1,3,-8);}
+  portraitLight.visible=menu;
+  if(menu){target.set(x+.2,y+1.85,z+4.3);look.set(x-1.48,y+1.32,z);}
   else{target.set(x+Math.sin(eye)*8.4,Math.max(-2,y)+5.5,z+Math.cos(eye)*8.4);look.set(x-Math.sin(eye)*2,Math.max(-2,y)+1,z-Math.cos(eye)*2);}
   camera.position.lerp(target,mode===lastMode?.22:1);camera.lookAt(look);lastMode=mode;
   actors.reset();used=0;body(s,t);let lit=0;
   for(const l of s.lanterns){const [x,y,z]=l.pos;lit+=Number(l.lit);
-   put('ball',l.lit?C.lit:C.dark,x,y+2.45,z,.64,.83,.64,0,0,0,l.lit);
+   const blink=l.lit&&l.oil<1800&&s.sim%60>=30;
+   put('ball',l.lit&&!blink?C.lit:C.dark,x,y+2.45,z,.64,l.lit?.83:.664,.64,0,0,0,l.lit&&!blink);
+   if(l.lit){put('box',C.ink,x,y+3.92,z,1.6,.15,.1);const width=1.6*l.oil/6000;
+    put('box',blink?C.dark:C.core,x-.8+width/2,y+3.92,z+.06,width,.10,.035,0,0,0,true);}
+   else for(const sign of [-1,1])put('box',C.ink,x+.03,y+2.46,z+sign*.62,.07,.36,.03,0,0,.48);
+   if(s.arc?.id===l.id&&s.sim-s.arc.tick<23){
+    const hand=[s.player.pos[0]+.45,s.player.pos[1]+.84,s.player.pos[2]+.2],end=[x,y+2.45,z];
+    bolt(hand,end,s.sim);
+   }
    for(const dy of [-.55,.52])put('pole',l.lit?C.core:C.wood,x,y+2.45+dy,z,.46,.05,.46,0,0,0,l.lit);
-   if(l.lit)halo(x,y+2.45,z,5);
-   if(l.lit)put('ring',C.lit,x,y+.055,z,6,6,6,0,Math.PI/2,0,true);
+   if(l.lit&&!blink)halo(x,y+2.45,z,5);
+   if(l.oil>=1800)put('ring',C.lit,x,y+.055,z,6,6,6,0,Math.PI/2,0,true);
   }
   ambient.intensity=.15+.55*lit/s.lanterns.length;
   for(const m of s.motes){const [x,y,z]=m.pos,cy=y+.7+.14*Math.sin(t*2+x);
-   halo(x,cy,z,1.55);put('ball',C.halo,x,cy,z,.19,.17,.19,0,0,0,true);put('ball',C.fly,x,cy+.09,z,.12,.13,.12,0,0,0,true);}
+   halo(x,cy,z,1.55);put('box',C.gold,x+.08,cy+.16,z,.075,.30,.07,0,0,-.48,true);put('box',C.gold,x-.06,cy-.12,z,.075,.26,.07,0,0,-.48,true);put('ball',C.halo,x,cy,z,.19,.17,.19,0,0,0,true);put('ball',C.fly,x,cy+.09,z,.12,.13,.12,0,0,0,true);}
   for(const sh of s.shades){const [x,y,z]=sh.pos,muted=sh.state==='stunned';
-   put('ball',muted?C.stun:C.ink,x,y,z,.68,.7,.62);put('ring',C.violet,x,y,z,.68,.73,.68,t*.4,0,0,true);
-   for(const dx of [-.22,.22])put('ball',C.violet,x+dx,y+.1,z+.48,.07,.09,.07,0,0,0,true);}
+   put('ball',muted?C.stun:C.ink,x,y,z,.68,.7,.62);put('ring',s.accessible?0x00b3ff:C.violet,x,y,z,.68,.73,.68,t*.4,0,0,true);
+   for(const dx of [-.22,.22])put('ball',s.accessible?0x00b3ff:C.violet,x+dx,y+.1,z+.48,.07,.09,.07,0,0,0,true);}
   for(const d of s.drifters)put('box',C.green,...d.pos,.23,.28,1.6,t,0,Math.sin(t*4)*.26,true);
   for(const c of s.charms)if(c.available)put('box',C.scarf,c.pos[0],c.pos[1]+.95+.1*Math.sin(t*3),c.pos[2],.38,.8,.12,t,0,.18,true);
   const age=(s.sim-s.lastPulse)/30;if(age>=0&&age<1)put('ring',C.lit,x,y+.12,z,Math.max(.1,age*5),Math.max(.1,age*5),1,0,Math.PI/2,0,true);

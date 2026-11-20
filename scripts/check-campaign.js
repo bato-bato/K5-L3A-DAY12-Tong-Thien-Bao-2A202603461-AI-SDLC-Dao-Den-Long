@@ -6,7 +6,7 @@ import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-const out='docs/proof/phase2',frames='.qa/campaign-frames';
+const out='docs/proof/phase3',frames='.qa/campaign-frames';
 await Promise.all([mkdir(out,{recursive:true}),mkdir(frames,{recursive:true})]);
 const server=await createServer({configFile:false,server:{port:0,host:'127.0.0.1',watch:null},optimizeDeps:{exclude:['three']},logLevel:'error'});
 await server.listen();
@@ -37,7 +37,7 @@ try{
    assert(source.includes('export function createGame('));source=source.replace('export function createGame(','function createBaseGame(');
    source+='\nexport function createGame(seed=12,config={},night=1){ const base=createBaseGame(seed,config,night), last=base.lanterns.at(-1);'+
     (losing?'return createBaseGame(seed,{player:{flames:1},random_motes:false,shades:[{pos:[0,.8,0]}]},night);':
-    'return createBaseGame(seed,{random_motes:false,random_shades:false,random_drifters:false,player:{pos:last.pos,carried:1},lanterns:base.lanterns.map(l=>({id:l.id,lit:l.id!==last.id,deposited:l.id===last.id?9:10}))},night);')+'}';
+    'return createBaseGame(seed,{random_motes:false,random_shades:false,random_drifters:false,time_left_s:0.15,player:{pos:last.pos,carried:1},lanterns:base.lanterns.map(l=>({id:l.id,lit:l.id!==last.id,deposited:l.id===last.id?9:10}))},night);')+'}';
    await route.fulfill({response,body:source});
  });
  await page.goto(server.resolvedUrls.local[0]);await page.locator('#game.menu').waitFor();await advance();
@@ -46,7 +46,7 @@ try{
  for(let n=1;n<=3;n++){
   assert.match(await page.locator('dialog h2').innerText(),new RegExp('Đêm '+n));await shot(1.2);
   await click('Vào đảo');await advance();await shot(1.4,'night-'+n);
-  await page.keyboard.press('e');await advance();assert.equal(await page.locator('dialog h2').innerText(),'Đảo đã sáng đèn');
+  await page.keyboard.press('e');await advance();await advance(8);await advance(1);assert.equal(await page.locator('dialog h2').innerText(),'Đảo đã sáng đèn');
   const msg=await page.locator('dialog p').innerText();observed.push(msg);await shot(1.2);
   await click(n<3?'Đêm kế tiếp':'Đón bình minh');
  }

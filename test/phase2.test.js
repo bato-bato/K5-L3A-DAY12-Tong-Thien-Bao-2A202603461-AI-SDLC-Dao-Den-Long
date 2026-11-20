@@ -15,7 +15,7 @@ function run(name){
 test('three standard maps, spawn coordinates, lamp ids, duration and initial occupancy',()=>{
  for(const n of [1,2,3]){
  const s=createGame(7,{},n);assert.equal(s.motes.length,20);assert.equal(new Set(s.motes.map(m=>m.pos.join())).size,20);
- assert.equal(s.shades.length,0);assert.equal(s.lanterns.length,4+n);assert.equal(s.duration,270+30*n);
+ assert.equal(s.shades.length,0);assert.equal(s.lanterns.length,4+n);assert.equal(s.duration,210+30*n);
  assert.deepEqual(s.lanterns.map(l=>l.pos),maps[n].lamps);assert.deepEqual(s.lanterns.map(l=>l.id),Array.from({length:n+4},(_,i)=>'L'+(i+1)));
  }assert.equal(terrain(2,35,2),0);assert.equal(terrain(2,35,2.01),-Infinity);
  assert.equal(terrain(3,0,6),6);assert.equal(terrain(3,0,18),3);assert.equal(terrain(3,0,-18),0);
@@ -70,7 +70,7 @@ test('scheduled entities appear at exact sim ticks and capacities are enforced',
  assert.equal(s.motes.length,24);assert.equal(new Set(s.motes.map(m=>m.pos.join())).size,24);
 });
 test('score from deposits, last-tick win and no-flames precedence',()=>{
- const r=run('priority');assert.equal(r.at(1).state,'won');assert.equal(r.at(1).score,350);
+ const r=run('priority');assert.equal(r.at(1).state,'won');assert.equal(r.at(1).score,1046);
  const cfg=structuredClone(cases.priority.scenario);cfg.player.flames=0;const s=createGame(1,cfg);step(s,{interact:true});assert.equal(s.reason,'no_flames');
 });
 test('drop TTL, ID ordering, one hit per tick, 3D pulse and height gates',()=>{

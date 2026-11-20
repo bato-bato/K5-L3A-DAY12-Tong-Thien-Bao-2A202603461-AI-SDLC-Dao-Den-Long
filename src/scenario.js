@@ -28,8 +28,8 @@ export function validateScenario(config,night=1) {
   if('player' in config) {
     const p=config.player;object(p,'player');
     if('pos' in p)vector(p.pos,3,'player.pos');
-    if('carried' in p)count(p.carried,'player.carried',tuning.carry_capacity);
-    for(const k of ['invuln_ticks','dash_cd_ticks','pulse_cd_ticks','charm_ticks'])if(k in p)count(p[k],k);
+    if('carried' in p)count(p.carried,'player.carried',Math.min(20,10+2*(p.successful_lights??0)));
+    for(const k of ['successful_lights','invuln_ticks','dash_cd_ticks','pulse_cd_ticks','charm_ticks'])if(k in p)count(p[k],k);
     if('flames' in p)count(p.flames,'player.flames');
   }
   const lampIds=new Set(),shadeIds=new Set();
@@ -49,7 +49,7 @@ export function validateScenario(config,night=1) {
   });
   list(config,'motes',pos=>vector(pos,3,'mote position'));
   list(config,'shades',s=>{
-    if('state' in s&&!['spawning','wander','chase','recoil','stunned'].includes(s.state))throw Error('invalid shade state');
+    if('state' in s&&!['drain','spawning','wander','chase','recoil','stunned'].includes(s.state))throw Error('invalid shade state');
     if('state_ticks_left' in s)count(s.state_ticks_left,'state_ticks_left');
     object(s,'shade');vector(s.pos,3,'shade.pos');
     if('id' in s){
@@ -63,6 +63,7 @@ export function validateScenario(config,night=1) {
     lampIds.add(l.id);
     if('pos' in l)vector(l.pos,3,'lantern.pos');
     if('deposited' in l)count(l.deposited,'deposited',tuning.lantern_cost);
+    if('fuel' in l)number(l.fuel,'fuel',0,100);if('ever_lit' in l)bool(l.ever_lit,'ever_lit');
     if('lit' in l)bool(l.lit,'lit');
   });
 }

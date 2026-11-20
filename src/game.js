@@ -3,7 +3,7 @@ import {maps,planar,spawnPoint,terrain} from './islands.js';
 import {movement} from './motion.js';
 import {collisions,moveEnemies,pulse,scheduleSafety} from './enemies.js';
 export {tuning,maps};export const HZ=60;
-const duration=[0,300,330,360];
+const duration=[0,240,270,300];
 const rounded=n=>Math.round(n*1000)/1000;
 const coords=p=>p.map(rounded);
 const compareId=(a,b)=>a.id.localeCompare(b.id,'en',{numeric:true});
@@ -17,7 +17,7 @@ function id(s,key,prefix){
 }
 function makeShade(s,spec,spawn=false){
  return {id:spec.id??id(s,'shade','S'),pos:[...spec.pos],state:spec.state??(spawn?'spawning':'chase'),
- left:spec.state_ticks_left??(spawn?60:0),heading:s.random()*2*Math.PI,push:0,dir:[1,0],eject:null};
+ left:spec.state_ticks_left??(spawn?60:0),heading:s.random()*2*Math.PI,push:0,dir:[1,0],eject:null,target:spec.target_lantern_id??null,drainTicks:0};
 }
 function makeDrifter(s,spec){
  return {id:spec.id??id(s,'drifter','D'),pos:[...spec.pos],state:spec.state??'idle',stolen:spec.stolen??0,left:spec.state_ticks_left??(spec.state==='flee'?240:0),heading:s.random()*2*Math.PI};
@@ -34,14 +34,14 @@ export function createGame(seed=12,config={},night=1){
   rngMotes:config.random_motes??true,rngShades:config.random_shades??true,rngDrifters:config.random_drifters??true,windEnabled:config.wind_enabled??true,
   serial:{shade:0,mote:0,drifter:0},used:new Set(),events:[],motes:[],shades:[],drifters:[],facing:0,lastPulse:-Infinity,jumped:false,
   wind:{active:false,dir_deg:0},controls:{move:[0,0],cam_yaw_deg:0,jump:false,dash:false,pulse:false,interact:false,pause:false},
-  lanterns:map.lamps.map((pos,i)=>({id:'L'+(i+1),pos:[...pos],lit:false,deposited:0})),
-  player:{pos,vel:[0,0,0],carried:pc.carried??0,flames:pc.flames??3,inv:pc.invuln_ticks??0,dashCD:pc.dash_cd_ticks??0,
+  lanterns:map.lamps.map((pos,i)=>({id:'L'+(i+1),pos:[...pos],lit:false,deposited:0,oil:0,ever_lit:false,relit_count:0})),
+  player:{lights:pc.successful_lights??0,pos,vel:[0,0,0],carried:pc.carried??0,flames:pc.flames??3,inv:pc.invuln_ticks??0,dashCD:pc.dash_cd_ticks??0,
    pulseCD:pc.pulse_cd_ticks??0,charm:pc.charm_ticks??0,dash:0,dashDir:[0,1],respawn:0,launch:null,grounded:false}
  };
  s.emit=(name,data)=>s.events.push({type:'event',tick:s.tick,name,data});
  s.addMote=(p,kind='random',ttl=0)=>s.motes.push({id:id(s,'mote','M'),pos:[...p],kind,ttl});
  s.player.grounded=Math.abs(pos[1]-terrain(night,pos[0],pos[2]))<1e-6;
- for(const l of config.lanterns??[]){const dst=s.lanterns.find(v=>v.id===l.id);Object.assign(dst,l);dst.pos=[...dst.pos];}
+ for(const l of config.lanterns??[]){const dst=s.lanterns.find(v=>v.id===l.id);Object.assign(dst,l);dst.pos=[...dst.pos];dst.oil=dst.lit?Math.round(60*(l.fuel??100)):0;dst.ever_lit=dst.lit||!!l.ever_lit;delete dst.fuel;}
  if(config.motes){for(const p of config.motes)s.addMote(p);}else if(s.rngMotes){for(let i=0;i<20;i++)spawnMote(s);}
  for(const actor of [...config.shades??[],...config.drifters??[]])if(actor.id)s.used.add(actor.id);
  s.shades=(config.shades??[]).map(spec=>makeShade(s,spec)).sort(compareId);
@@ -53,7 +53,7 @@ export function createGame(seed=12,config={},night=1){
 export const timeLeft=s=>Math.max(0,s.duration-s.sim/60);
 export function nearestLantern(s,range=2){
  let best=null,bestDistance=range+1e-8;
- for(const l of s.lanterns){const d=planar(l.pos,s.player.pos);if(!l.lit&&d<bestDistance-1e-10){best=l;bestDistance=d;}}
+ for(const l of s.lanterns){const d=planar(l.pos,s.player.pos);if((!l.lit||l.oil<6000)&&d<bestDistance-1e-10){best=l;bestDistance=d;}}
  return best;
 }
 function tickTimers(s){
@@ -68,10 +68,20 @@ function tickTimers(s){
   s.wind.active=s.sim>=1800&&phase<300;
  }
 }
+export const capacity=p=>Math.min(20,10+2*p.lights);
+function burn(s){
+ for(const l of s.lanterns){
+  if(!l.lit)continue;
+  const drains=s.shades.filter(sh=>sh.state==='drain'&&sh.target===l.id&&planar(sh.pos,l.pos)<=2&&l.oil<1800);
+  l.oil=Math.max(0,l.oil-1-5*drains.length);
+  for(const sh of drains)if(++sh.drainTicks%60===0)s.emit('fuel_drain',{lantern_id:l.id,shade_id:sh.id,fuel:Math.round(l.oil/6)/10});
+  if(!l.oil){l.lit=false;l.deposited=0;s.emit('lantern_out',{lantern_id:l.id});}
+ }
+}
 function collect(s){
  const p=s.player;
  s.motes=s.motes.filter(m=>{
-  if(p.carried>=10||planar(m.pos,p.pos)>1+1e-8||Math.abs(m.pos[1]-p.pos[1])>1.5+1e-8)return true;
+  if(p.carried>=capacity(p)||planar(m.pos,p.pos)>1+1e-8||Math.abs(m.pos[1]-p.pos[1])>1.5+1e-8)return true;
   p.carried++;s.emit('mote_picked',{carried:p.carried});return false;
  });
  for(const c of s.charms){
@@ -81,17 +91,20 @@ function collect(s){
 }
 function deposit(s){
  const l=nearestLantern(s);if(!l)return;
- const amount=Math.min(s.player.carried,10-l.deposited);if(!amount)return;
- l.deposited+=amount;s.player.carried-=amount;s.score+=10*amount;
- s.emit('deposit',{lantern_id:l.id,amount,deposited:l.deposited});
- if(l.deposited===10){l.lit=true;s.score+=100;s.emit('lantern_lit',{lantern_id:l.id});scheduleSafety(s,l);}
+ const cost=l.ever_lit?5:10;
+ const amount=Math.min(s.player.carried,l.lit?Math.ceil((6000-l.oil)/600):cost-l.deposited);
+ if(amount<=0)return;
+ s.player.carried-=amount;s.score+=5*amount;
+ if(l.lit){const weak=l.oil<1800;l.oil=Math.min(6000,l.oil+600*amount);s.emit('refuel',{lantern_id:l.id,amount,fuel:Math.round(l.oil/6)/10});if(weak&&l.oil>=1800)scheduleSafety(s,l);return;}
+ l.deposited+=amount;s.emit('deposit',{lantern_id:l.id,amount,deposited:l.deposited});
+ if(l.deposited===cost){const relight=l.ever_lit;l.lit=l.ever_lit=true;l.oil=6000;if(relight)l.relit_count++;s.player.lights++;s.score+=relight?40:100;s.emit('lantern_lit',{lantern_id:l.id,relight});scheduleSafety(s,l);}
 }
 function spawn(s){
  if(s.rngMotes&&s.sim%240===0)spawnMote(s);
  const first=s.sim===300,later=s.sim>300&&(s.sim-300)%s.map.interval===0;
  if(s.rngShades&&(first||later)){
   for(let i=0;i<(first?2:1)&&s.shades.length<s.map.cap;i++){
-   const valid=s.map.spawns.filter(p=>planar(p,s.player.pos)>=15&&!s.shades.some(sh=>planar(p,sh.pos)<1)&&!s.lanterns.some(l=>l.lit&&planar(l.pos,p)<6));
+   const valid=s.map.spawns.filter(p=>planar(p,s.player.pos)>=15&&!s.shades.some(sh=>planar(p,sh.pos)<1)&&!s.lanterns.some(l=>l.oil>=1800&&planar(l.pos,p)<6));
    if(!valid.length)break;
    const point=pick(s,valid),sh=makeShade(s,{pos:[point[0],point[1]+.8,point[2]]},true);
    s.shades.push(sh);s.shades.sort(compareId);s.emit('shade_spawned',{id:sh.id});
@@ -102,8 +115,8 @@ function spawn(s){
  }
 }
 function finish(s,reason){
- s.reason=reason;s.status=reason==='all_lit'?'won':'lost';
- if(s.status==='won')s.score+=Math.floor(timeLeft(s))*2+50*s.player.flames;
+ s.reason=reason;s.status=reason==='dawn_survived'?'won':'lost';
+ if(s.status==='won')s.score+=s.lanterns.reduce((sum,l)=>sum+(l.lit?50+Math.floor(l.oil/60):0),0)+50*s.player.flames;
  s.emit('game_over',{result:s.status,reason});
 }
 export function step(s,frame={}){
@@ -112,17 +125,17 @@ export function step(s,frame={}){
  Object.assign(s.controls,frame);s.tick++;s.events=[];s.jumped=false;
  if(edge.pause){s.status=s.status==='paused'?'playing':'paused';s.emit(s.status==='paused'?'paused':'resumed',{});}
  if(s.status==='paused')return s.events;
- s.sim++;tickTimers(s);movement(s,edge);
+ s.sim++;tickTimers(s);burn(s);movement(s,edge);
  if(!s.player.respawn){collect(s);if(edge.interact)deposit(s);if(edge.pulse)pulse(s);}
  moveEnemies(s);collisions(s);spawn(s);
- if(s.player.flames<=0)finish(s,'no_flames');else if(s.lanterns.every(l=>l.lit))finish(s,'all_lit');else if(timeLeft(s)<=0)finish(s,'dawn');
+ if(s.player.flames<=0)finish(s,'no_flames');else if(timeLeft(s)<=0)finish(s,s.lanterns.filter(l=>l.lit).length>=Math.ceil(.6*s.lanterns.length)?'dawn_survived':'dawn');
  return s.events;
 }
 export function snapshot(s){
  const p=s.player;
  return {type:'snapshot',night:s.night,tick:s.tick,sim_tick:s.sim,state:s.status,time_left_s:timeLeft(s),score:s.score,wind:{...s.wind},
- player:{pos:coords(p.pos),vel:coords(p.vel),grounded:p.grounded,invuln:p.inv>0,dash_cd_s:p.dashCD/60,pulse_cd_s:p.pulseCD/60,charm_s:p.charm/60,flames:p.flames,carried:p.carried},
- lanterns:s.lanterns.map(l=>({...l,pos:coords(l.pos)})),shades:s.shades.map(sh=>({id:sh.id,pos:coords(sh.pos),state:sh.state})),
+ player:{capacity:capacity(p),pos:coords(p.pos),vel:coords(p.vel),grounded:p.grounded,invuln:p.inv>0,dash_cd_s:p.dashCD/60,pulse_cd_s:p.pulseCD/60,charm_s:p.charm/60,flames:p.flames,carried:p.carried},
+ lanterns:s.lanterns.map(({oil,...l})=>({...l,fuel:Math.round(oil/6)/10,pos:coords(l.pos)})),shades:s.shades.map(sh=>({id:sh.id,pos:coords(sh.pos),state:sh.state})),
  motes_active:s.motes.length,motes:s.motes.map(m=>({id:m.id,pos:coords(m.pos),kind:m.kind,ttl_s:m.ttl/60})),
  drifters:s.drifters.map(d=>({id:d.id,pos:coords(d.pos),state:d.state,stolen:d.stolen})),
  charms:s.charms.map(c=>({id:c.id,pos:coords(c.pos),available:c.available,respawn_s:c.left/60}))};
