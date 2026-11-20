@@ -1,26 +1,6 @@
 {
-  "ticks": 812,
-  "status": "won",
-  "position": [
-    11.009,
-    0,
-    3.992
-  ],
-  "lives": 1,
-  "fireflies": 0,
-  "collected": 9,
-  "lanterns": [
-    {
-      "name": "Bến Trăng",
-      "lit": true
-    },
-    {
-      "name": "Đồi Nguyệt",
-      "lit": true
-    },
-    {
-      "name": "Vườn Sương",
-      "lit": true
-    }
-  ]
+  "type": "end",
+  "ticks": 725,
+  "state": "won",
+  "score": 1354
 }

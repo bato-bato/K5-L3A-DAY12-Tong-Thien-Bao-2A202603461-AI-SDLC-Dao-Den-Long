@@ -1,16 +1,22 @@
-✔ walking through fireflies and lighting the first lantern is reproducible (4.1064ms)
-✔ diagonal movement is normalized and stays ashore (2.102ms)
-✔ jump returns to ground (0.3835ms)
-✔ one pickup per firefly; lamp requires stock and proximity (0.4029ms)
-✔ three lamps win, terminal state is frozen (0.4327ms)
-✔ shadows damage, grant grace period and can end the game (0.247ms)
-✔ malformed replays rejected (0.4052ms)
-✔ full island can be restored using only motion and interaction inputs (2.9845ms)
-ℹ tests 8
+✔ declared CLI writes deterministic JSONL and handles invalid files atomically (1056.7795ms)
+✔ scenario setup is silent and tick zero precedes any input (3.7335ms)
+✔ sparse frames persist, yaw uses contract axes and diagonals are normalized (4.678ms)
+✔ jump is edge triggered, gravity returns the feet to Y=0 (0.6589ms)
+✔ pickup uses inclusive horizontal radius, respects capacity and leaves the excess (0.6971ms)
+✔ interact deposits partial stock, requires a fresh press and lights once (1.7542ms)
+✔ pulse spends stock, pushes on XZ, scores stuns and respects range and cooldown (1.9678ms)
+✔ shade pursues at declared speed, hits once per invulnerability interval (1.9525ms)
+✔ lit lantern keeps shades outside the safe radius and protects the player (3.7068ms)
+✔ fifth lamp ends at event tick with win bonuses and remaining time (0.7691ms)
+✔ dawn stops the run early and end follows the scheduled final snapshot (1.1573ms)
+✔ seeded spawns have stable unique ids, disabled generators stay empty (16.4859ms)
+✔ full Night 1 can be won from the actual default map using only contract inputs (15.7778ms)
+✔ snapshot coordinates round to three decimals without quantizing simulation (0.4956ms)
+ℹ tests 14
 ℹ suites 0
-ℹ pass 8
+ℹ pass 14
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 126.9939
+ℹ duration_ms 1274.1707

@@ -1,9 +1,11 @@
 import {chromium} from 'playwright-core';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
+import {pathToFileURL} from 'node:url';
+import path from 'node:path';
 
-const url=process.argv[2]||'http://127.0.0.1:5173';
+const url=process.argv[2]||pathToFileURL(path.resolve('docs/demo/choi-ngay.html')).href;
 const browser=await chromium.launch({channel:process.env.BROWSER_CHANNEL||'chrome',args:['--enable-unsafe-swiftshader']});
 const out='docs/proof',frames='.qa/frames';
 try {
@@ -29,24 +31,51 @@ try {
  await advance(1);await capture(2.4,'menu');
  await page.getByRole('button',{name:'Cách chơi'}).click();assert(await page.locator('dialog').isVisible());await page.getByText('Đã hiểu').click();
  await page.locator('#start').click();await advance(1);await capture(.85);
- await page.keyboard.down('a');await page.keyboard.down('w');
- for(let i=0;i<17;i++){await advance(4);await capture(.07);}
- await page.keyboard.up('w');
- for(let i=0;i<15;i++){await advance(4);await capture(.07);}
- await page.keyboard.up('a');await advance(1);
- assert(Number(await page.locator('#bag').innerText())>=3);
- await capture(.8);await page.keyboard.press('e');await advance(1);
- assert.equal(await page.locator('#count').innerText(),'1 / 3');await capture(2,'first-lantern');
+ async function walk(key,ticks,record=false){
+  await page.keyboard.down(key);
+  for(let elapsed=0;elapsed<ticks;elapsed+=6){
+    await advance(Math.min(6,ticks-elapsed));if(record)await capture(.10);
+  }
+  await page.keyboard.up(key);
+ }
+ async function light(expected){
+  await page.keyboard.press('e');await advance(1);
+  assert.equal(await page.locator('#count').innerText(),expected+' / 5');
+ }
+ await walk('w',90,true);assert(Number.parseInt(await page.locator('#bag').innerText())>=3);
+ await light(1);await capture(1.2,'first-lantern');
+ const before=Number.parseInt(await page.locator('#bag').innerText());
+ await page.keyboard.press('f');await advance(1);
+ assert.equal(Number.parseInt(await page.locator('#bag').innerText()),before-1);
+ await advance(6);await capture(.5,'pulse');
  await page.keyboard.press('Escape');assert(await page.locator('dialog').isVisible());
  await page.getByRole('button',{name:'Tiếp tục'}).click();assert(!(await page.locator('dialog').isVisible()));
- assert.deepEqual(errors,[]);
+ await page.keyboard.press('Space');
+ await walk('a',120,true);await light(2);await capture(.7);
+ await walk('s',150,true);await light(3);await capture(.7);
+ await walk('d',150,true);await light(4);await capture(.7);
+ await walk('d',90,true);await walk('w',120,true);await light(5);
+ assert.equal(await page.locator('dialog h2').innerText(),'Đảo đã sáng đèn');await capture(2.1,'won');
+ await page.getByRole('button',{name:'Chơi lại'}).click();
+ assert.equal(await page.locator('#count').innerText(),'0 / 5');
+ for(let i=0;i<60&&!(await page.locator('dialog').isVisible());i++){
+   await page.evaluate(()=>{for(let j=0;j<5;j++)window.advanceFrame(100);});
+ }
+ assert.equal(await page.locator('dialog h2').innerText(),'Mây lạc trong sương');
+ await capture(1.4,'lost');await page.getByRole('button',{name:'Thử lại'}).click();
+ assert.equal(await page.locator('#life').innerText(),'3 / 3');assert.deepEqual(errors,[]);
  const tests=execFileSync(process.execPath,['--test','--test-reporter=spec'],{encoding:'utf8'}).replace(/\x1b\[[0-9;]*m/g,'');
- const raw=execFileSync(process.execPath,['scripts/headless.js','scenarios/first-lantern.json'],{encoding:'utf8'});
- await writeFile(out+'/tests.txt',tests);await writeFile(out+'/first-lantern.json',raw);
- await page.setContent('<html lang="vi"><meta charset="utf-8"><body style="background:#152a36;color:#ffe7bd;padding:24px;font:16px system-ui"><h1>Kết quả kiểm chứng</h1><pre id="proof" style="font:15px/1.55 monospace;white-space:pre-wrap"></pre></body></html>');
- await page.locator('#proof').evaluate((el,t)=>el.textContent=t,tests+'\nnode scripts/headless.js scenarios/first-lantern.json\n'+raw);
+ const log=out+'/night1.jsonl';
+ execFileSync(process.execPath,['scripts/headless.js','--night','1','--seed','12','--ticks','18000','--inputs','scenarios/restore-island.json','--snapshot-every','60','--out',log]);
+ const rows=(await readFile(log,'utf8')).trim().split('\n').map(JSON.parse);
+ const terminal=rows.at(-1);assert.equal(terminal.state,'won');
+ await writeFile(out+'/tests.txt',tests);
+ await page.setContent('<html lang="vi"><meta charset="utf-8"><body style="background:#152a36;color:#ffe7bd;padding:24px;font:16px system-ui"><h1>Đảo Bến · Kết quả kiểm chứng</h1><pre id="proof" style="font:17px/1.7 monospace;white-space:pre-wrap"></pre></body></html>');
+ const summary=rows.filter(row=>row.name==='lantern_lit').map(row=>'Tick '+row.tick+'   '+row.data.lantern_id+' sáng').join('\n');
+ const totals=tests.split('\n').filter(line=>/ (tests|pass|fail) \d+/.test(line)).join('\n');
+ await page.locator('#proof').evaluate((el,t)=>el.textContent=t,summary+'\n'+JSON.stringify(terminal)+'\n\n'+totals);
  await capture(4);
  shots.push(shots.at(-1).split('\n')[0]);
  await writeFile(frames+'/list.txt',shots.join('\n')+'\n');
- console.log('Browser controls, first lantern, pause and resume passed. Captured '+counter+' frames.');
+ console.log('Browser: all five lanterns, pulse, win, loss, restart and pause/resume passed. Captured '+counter+' frames.');
 }finally{await browser.close();}
