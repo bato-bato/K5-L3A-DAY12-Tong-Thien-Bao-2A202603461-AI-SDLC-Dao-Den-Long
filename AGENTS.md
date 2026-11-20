@@ -1,3 +1,5 @@
 # Đảo Đèn Lồng
 
-Dùng `npm ci`, `npm run dev` và `npm run verify`. Mọi luật tương tác nằm trong `src/game.js` và phải chạy được bằng Node cùng bộ dữ liệu với giao diện. Khi sửa luật, chạy lại kịch bản cũ và ghi lý do nếu kết quả cần đổi. Giữ bằng chứng của phiên bản đã chạy. Chỉ đánh dấu phase sau khi đọc ticket tương ứng.
+Dùng Node 22.12+, `npm ci`, `npm run dev`, `npm run verify`. Giao diện và CLI dùng cùng `src/game.js`. Mọi giá trị tuning đọc từ `game.contract.json`.
+
+Sau khi sửa mô phỏng, chạy cùng seed, scenario và inputs hai lần, so JSONL. Kiểm tra snapshot 0, tick của event, frame giữ trạng thái, dòng end và mã thoát 2 của file sai. Chạy lại đường đi thắng trong `scenarios/restore-island.json`. Sau khi sửa giao diện, build rồi chạy `node scripts/browser-check.js` để thử cả hai nút chơi lại. Chỉ đánh dấu phase sau khi đối chiếu ticket và lưu bằng chứng thật tương ứng.

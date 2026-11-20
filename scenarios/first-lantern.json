@@ -1,1 +1,23 @@
-{"actions":[{"x":-1,"z":-0.5,"ticks":119},{"light":true,"ticks":1}]}
+{
+  "frames": [
+    {
+      "tick": 0,
+      "move": [
+        0,
+        -1
+      ]
+    },
+    {
+      "tick": 90,
+      "move": [
+        0,
+        0
+      ],
+      "interact": true
+    },
+    {
+      "tick": 91,
+      "interact": false
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "player": {
+    "carried": 3
+  },
+  "motes": [],
+  "random_motes": false,
+  "random_shades": false,
+  "shades": [
+    {
+      "id": "S7",
+      "pos": [
+        3,
+        0,
+        0
+      ]
+    }
+  ],
+  "time_left_s": 30
+}
