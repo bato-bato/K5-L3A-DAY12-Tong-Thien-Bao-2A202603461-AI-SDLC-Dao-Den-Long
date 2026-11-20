@@ -1,0 +1,16 @@
+✔ walking through fireflies and lighting the first lantern is reproducible (4.1064ms)
+✔ diagonal movement is normalized and stays ashore (2.102ms)
+✔ jump returns to ground (0.3835ms)
+✔ one pickup per firefly; lamp requires stock and proximity (0.4029ms)
+✔ three lamps win, terminal state is frozen (0.4327ms)
+✔ shadows damage, grant grace period and can end the game (0.247ms)
+✔ malformed replays rejected (0.4052ms)
+✔ full island can be restored using only motion and interaction inputs (2.9845ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 126.9939

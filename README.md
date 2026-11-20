@@ -1,3 +1,35 @@
+# Đảo Đèn Lồng
+
+[Video demo MP4](docs/demo/demo.mp4) · [Chơi ngay, mở bằng Chrome hoặc Edge](docs/demo/choi-ngay.html) · [Bản web đóng gói](docs/demo/dao-den-long-web.zip) · [Kết quả kiểm thử](docs/proof/tests.txt)
+
+Game phiêu lưu 3D góc nhìn thứ ba. Giúp Mây gom đom đóm, né Bóng Mực và thắp ba ngọn đèn trên đảo. Bản chơi bám theo đề công khai. Yêu cầu chi tiết trên Lab Board và bộ test chính thức đang chờ đối chiếu.
+
+## Chơi trên máy
+
+Cài Node.js 22.12 trở lên. Mở terminal trong thư mục repo, chạy hai lệnh và mở địa chỉ mà Vite in ra.
+
+```sh
+npm ci
+npm run dev
+```
+
+Dùng WASD hoặc các phím mũi tên để đi, Space để nhảy và E để thắp đèn khi đứng gần với ít nhất ba đom đóm. Nhấn Esc để tạm dừng. Trên màn hình cảm ứng, dùng các nút điều khiển trong game. Nút nốt nhạc bật/tắt âm báo.
+
+Để chơi bản đã đóng gói, giải nén ZIP, mở terminal tại thư mục chứa `index.html`, chạy `python3 -m http.server 8000` (Windows dùng `python -m http.server 8000`) rồi mở `http://localhost:8000`.
+
+## Chạy kiểm tra
+
+- `npm run verify` chạy toàn bộ test và build bản web vào `dist/`.
+- `node scripts/headless.js scenarios/first-lantern.json` mô phỏng quá trình thu gom và thắp ngọn đèn đầu tiên.
+- `node scripts/headless.js scenarios/restore-island.json` chạy một lượt đến khi chiến thắng.
+- `node scripts/browser-check.js` chạy kiểm tra giao diện trên Chrome và lưu ảnh, log cùng các khung hình quay thực tế. Khởi động game ở cổng 5173 trước khi chạy hoặc truyền URL làm đối số.
+- [Ghi chép và giả định](docs/development.md) · [Nguồn tài nguyên](CREDITS.md) · [Giấy phép mã nguồn](LICENSE).
+
+CLI hiện đọc `{"actions":[{"x":-1,"z":0,"ticks":12}]}`. Hai trục nhận giá trị từ -1 đến 1. `jump` và `light` nhận giá trị boolean và được kích hoạt ở bước đầu của hành động. Kết quả JSON xuất ra stdout. Đây là giao diện nội bộ trong khi chờ Test Contract chính thức.
+
+---
+
+
 # Day 12 — AI SDLC: Đảo Đèn Lồng
 
 > **Cá nhân** (1 người / 1 MSSV) · Áp dụng SDLC cùng AI để xây một **game 3D** qua **4 phase**, từ yêu cầu ban đầu tới bản phát hành.
