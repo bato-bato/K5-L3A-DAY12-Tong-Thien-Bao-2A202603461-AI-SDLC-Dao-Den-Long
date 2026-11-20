@@ -1,3 +1,4 @@
+import {grassTuft,foliageMaterial,nightLandscape} from './landscape.js';
 import * as T from 'three';
 import {maps,terrain} from './islands.js';
 import {nearestLantern} from './game.js';
@@ -23,7 +24,16 @@ function spruceBough(){
  }
  const geom=new T.BufferGeometry();geom.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geom.computeVertexNormals();return geom;
 }
-geo.bough=spruceBough();
+// Uneven ridges give the distant islands a silhouette of overlapping rock faces.
+const ridge=new T.ConeGeometry(1,1,11,4).toNonIndexed();
+const peaks=ridge.attributes.position;
+for(let i=0;i<peaks.count;i++){
+ const x=peaks.getX(i),y=peaks.getY(i),z=peaks.getZ(i),u=y+.5;
+ const fold=.91+.18*Math.sin(5*x+3*z)+.12*Math.cos(7*z-2*x);
+ peaks.setXYZ(i,x*fold+.28*u,y+.10*(1-u)*Math.sin(5*x+6*z),z*fold-.18*u);
+}
+ridge.computeVertexNormals();geo.ridge=ridge;
+geo.bough=spruceBough();geo.grass=grassTuft();
 const dummy=new T.Object3D(),color=new T.Color();
 function pose(x,y,z,sx,sy,sz,ry=0,rx=0,rz=0){
  dummy.position.set(x,y,z);dummy.rotation.set(rx,ry,rz);dummy.scale.set(sx,sy,sz);dummy.updateMatrix();return dummy.matrix;
@@ -34,7 +44,7 @@ function layer(parent,materials,dynamic=false){
  function add(g,c,x,y,z,sx,sy,sz,ry=0,rx=0,rz=0,glow=false){
   const key=g+Number(glow);let batch=batches.get(key);
   if(!batch){
-   const mesh=new T.InstancedMesh(geo[g],glow?materials.glow:materials.solid,dynamic?1024:(g==='bough'?4200:2400));
+   const mesh=new T.InstancedMesh(geo[g],glow?materials.glow:(materials[g]??materials.solid),dynamic?1024:(g==='bough'?4200:2400));
    mesh.frustumCulled=false;mesh.count=0;parent.add(mesh);batch={mesh};batches.set(key,batch);
   }
   const m=batch.mesh,i=m.count++;m.setMatrixAt(i,pose(x,y,z,sx,sy,sz,ry,rx,rz));m.setColorAt(i,color.setHex(c));
@@ -42,7 +52,7 @@ function layer(parent,materials,dynamic=false){
  function flush(){for(const {mesh} of batches.values()){mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}}
  return {add,flush,reset(){for(const {mesh} of batches.values())mesh.count=0;},dispose(){for(const {mesh} of batches.values()){parent.remove(mesh);mesh.dispose();}}};
 }
-function sceneMap(scene,night,mats){
+function sceneMap(scene,night,mats,benchmark){
  const b=layer(scene,mats),put=b.add,extra=[];
  for(const [cx,r] of maps[night].islands){
   put('land',C.wood,cx,-2,0,r,3.8,r);put('land',C.sand,cx,-.16,0,r,.29,r);
@@ -50,8 +60,8 @@ function sceneMap(scene,night,mats){
   for(let i=0;i<560;i++){
    const a=i*2.39996,r1=Math.sqrt((i+.5)/560)*r*.98,x=cx+Math.cos(a)*r1,z=Math.sin(a)*r1,base=terrain(night,x,z);
    const tint=i%5?0x487764:0x79977e;
-   put('cone',tint,x,base+.18,z,.09,.40,.09,a,.14);
-   if(i%4===0){put('cone',tint,x+.13,base+.09,z,.085,.24,.08,-a,0,-.4);put('rock',0xa9a9a0,x+.1,base+.35,z,.065,.075,.065);}
+   put(benchmark?'cone':'grass',tint,x,base+.18,z,benchmark?.09:.24,.40,benchmark?.09:.24,a,.14);
+   if(i%4===0){put(benchmark?'cone':'grass',tint,x+.13,base+.09,z,benchmark?.085:.18,.24,benchmark?.08:.18,-a,0,-.4);put('rock',0xa9a9a0,x+.1,base+.35,z,.065,.075,.065);}
   }
   for(let i=0;i<80;i++){
    const a=i*2.399,r1=r*Math.sqrt((i+.5)/80),x=cx+Math.cos(a)*r1,z=Math.sin(a)*r1;
@@ -118,7 +128,7 @@ function sceneMap(scene,night,mats){
   put('box',C.wood,x,y+3.32,z,2.5,.23,.34);put('box',C.dark,x,y+3.5,z,2.8,.15,.59);
  }
  for(let i=0;i<32;i++){
-  const a=i*.41,r=85+i%4*12;put('cone',i%2?0x353954:0x494761,Math.cos(a)*r,-2,Math.sin(a)*r,8+i%8,10+i%13,9);
+  const a=i*.41,r=85+i%4*12;put(benchmark?'cone':'ridge',i%2?0x353954:0x494761,Math.cos(a)*r,-2,Math.sin(a)*r,8+i%8,10+i%13,9);
  }
  for(let i=0;i<24;i++){const a=i*2.399,r=55+i%3*6;put('ball',C.lit,Math.cos(a)*r,6+i%11,Math.sin(a)*r,.22,.31,.22,0,0,0,true);}
  b.flush();return ()=>{b.dispose();for(const o of extra){scene.remove(o);o.geometry.dispose();o.material.dispose();}};
@@ -138,11 +148,14 @@ export function makeWorld(canvas){
  function halo(x,y,z,size){if(!sprites[used]){sprites[used]=new T.Sprite(haloMat);scene.add(sprites[used]);}const g=sprites[used++];g.visible=true;g.position.set(x,y,z);g.scale.setScalar(size);}
  const portraitLight=new T.DirectionalLight(0xffedda,2.1);portraitLight.position.set(3,4,5);scene.add(portraitLight);
  const mats={solid:new T.MeshLambertMaterial({side:T.DoubleSide}),glow:new T.MeshBasicMaterial()};
- const backdrop=layer(scene,mats);
- backdrop.add('disc',C.sea,30,-4,0,175,1,175);
- backdrop.add('ball',C.core,-34,30,-92,6,6,6,0,0,0,true);
+ const clock={value:0},strength={value:0};
+ mats.grass=foliageMaterial(mats.solid,clock,strength,false);mats.bough=foliageMaterial(mats.solid,clock,strength,true);
+ const landscape=nightLandscape(scene,clock),standard=new T.Group();scene.add(standard);
+ const basic=layer(standard,mats),backdrop=layer(scene,mats);
+ basic.add('disc',C.sea,30,-4,0,175,1,175);
+ basic.add('ball',C.core,-34,30,-92,6,6,6,0,0,0,true);
  for(let i=0;i<260;i++){const a=i*2.399,h=.05+((i*173)%223)/245,r=140*Math.sqrt(1-h*h);backdrop.add('ball',C.fly,Math.cos(a)*r,h*140,Math.sin(a)*r,.11,.11,.11,0,0,0,true);}
- backdrop.flush();
+ basic.flush();backdrop.flush();
  const actors=layer(scene,mats,true),put=actors.add,look=new T.Vector3(),target=new T.Vector3(),projected=new T.Vector3();
  function bolt(start,end,tick){
   let prev=new T.Vector3(...start);const up=new T.Vector3(0,1,0);
@@ -195,15 +208,18 @@ export function makeWorld(canvas){
 
  }
  return function draw(s,mode,t,yaw=0){
-  if(previousNight!==s.night){disposeMap();disposeMap=sceneMap(scene,s.night,mats);previousNight=s.night;lastMode=null;}
+  if(previousNight!==s.night){disposeMap();disposeMap=sceneMap(scene,s.night,mode==='bench'?{solid:mats.solid,glow:mats.glow}:mats,mode==='bench');previousNight=s.night;lastMode=null;}
   const w=canvas.clientWidth,h=canvas.clientHeight;
   if(canvas.width!==w||canvas.height!==h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   const [x,y,z]=s.player.pos,menu=mode==='menu',eye=yaw*Math.PI/180;
   portraitLight.visible=menu;
   if(mode==="bench"){const a=t*2*Math.PI/15;target.set(30*Math.cos(a),15,-30*Math.sin(a));look.set(0,0,0);}
   else if(menu){target.set(x+.2,y+1.85,z+4.3);look.set(x-1.48,y+1.32,z);}
-  else{target.set(x+Math.sin(eye)*8.4,Math.max(-2,y)+5.5,z+Math.cos(eye)*8.4);look.set(x-Math.sin(eye)*2,Math.max(-2,y)+1,z-Math.cos(eye)*2);}
+  else{target.set(x+Math.sin(eye)*8.4,Math.max(-2,y)+4.8,z+Math.cos(eye)*8.4);look.set(x-Math.sin(eye)*2,Math.max(-2,y)+1.65,z-Math.cos(eye)*2);}
   camera.position.lerp(target,mode===lastMode&&mode!=="bench"?.22:1);camera.lookAt(look);lastMode=mode;
+  standard.visible=mode==='bench';landscape.group.visible=!standard.visible;
+  landscape.sky.position.copy(camera.position);
+  clock.value=s.reduced?0:t;strength.value=s.reduced?0:(s.wind.active?1.7:1);
   snowMaterial.uniforms.time.value=t;snowMaterial.uniforms.center.value.copy(camera.position);
   snowfall.visible=mode!=="bench"&&!s.reduced;
   actors.reset();used=0;if(mode==="bench"){put("ball",C.coat,x,y+.85,z,.42,.82,.42);put("hat",C.wood,x,y+1.85,z,.55,.34,.55);}else body(s,t);let lit=0;
