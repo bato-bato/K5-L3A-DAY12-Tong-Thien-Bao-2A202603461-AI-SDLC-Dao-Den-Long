@@ -1,6 +1,6 @@
 # Đảo Đèn Lồng · Đèn cạn dầu
 
-[Bản chơi offline](docs/demo/choi-ngay.html) · [Ảnh Mây hệ sét trong game](docs/proof/phase3/may-he-set.jpg) · [Quyết định thiết kế và thay đổi](docs/phase3.md)
+[Bản chơi offline](docs/demo/choi-ngay.html) · [Ảnh Mây người tuyết trong game](docs/proof/winter/nguoi-tuyet.jpg) · [Quyết định thiết kế và thay đổi](docs/phase3.md)
 
 Mở file HTML bằng Chrome hoặc Edge. Để chạy từ mã nguồn, dùng Node 22.12 trở lên, chạy `npm ci` rồi `npm run dev`.
 

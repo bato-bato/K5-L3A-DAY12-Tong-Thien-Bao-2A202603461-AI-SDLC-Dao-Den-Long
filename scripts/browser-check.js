@@ -3,13 +3,13 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-const out='docs/proof/phase3';await mkdir(out,{recursive:true});
+const out='docs/proof/winter';await mkdir(out,{recursive:true});
 const url=process.argv[2]||pathToFileURL(path.resolve('docs/demo/choi-ngay.html')).href;
 const browser=await chromium.launch({channel:process.env.BROWSER_CHANNEL||'chrome',args:['--enable-unsafe-swiftshader']});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:720},deviceScaleFactor:1});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(url);await page.screenshot({path:out+'/may-he-set.jpg',quality:95});await page.locator('#start').click();await page.getByRole('button',{name:'Vào đảo'}).click();
+ await page.goto(url);await page.screenshot({path:out+'/nguoi-tuyet.jpg',quality:95});await page.locator('#start').click();await page.getByRole('button',{name:'Vào đảo'}).click();
  await page.keyboard.down('w');await page.waitForTimeout(550);await page.keyboard.press('Shift');await page.keyboard.up('w');await page.keyboard.press('Space');
  await page.keyboard.press('p');assert.equal(await page.locator('dialog h2').innerText(),'Tạm dừng');
  const time=await page.locator('#timer').innerText();await page.waitForTimeout(300);assert.equal(await page.locator('#timer').innerText(),time);

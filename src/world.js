@@ -8,6 +8,22 @@ const C={sky:0x0e1430,fog:0x1b2350,grass:0x2f5d50,sand:0xc9b48a,wood:0x6b4a2f,se
 const geo={box:new T.BoxGeometry(),ball:new T.IcosahedronGeometry(1,1),rock:new T.IcosahedronGeometry(1,0),
  pole:new T.CylinderGeometry(1,1,1,20),land:new T.CylinderGeometry(1,1,1,72),cone:new T.ConeGeometry(1,1,10),
  ring:new T.TorusGeometry(1,.029,5,48),disc:new T.CylinderGeometry(1,1,.018,48)};
+geo.snowball=new T.SphereGeometry(1,32,22);
+geo.hat=new T.ConeGeometry(1,1,48);
+// A single spruce bough carries staggered sprays along a drooping midrib.
+function spruceBough(){
+ const vertices=[];
+ for(let i=0;i<13;i++){
+  const u=i/13,length=.36*(1-u)+.09,base=-.19*Math.sin(u*Math.PI*.83);
+  for(const side of [-1,1]){
+   const z=u,tip=z+length*.74;
+   vertices.push(0,base+.048,z-.10,side*length,base-.06,tip,side*.075,base+.015,z+.18);
+   vertices.push(0,base+.06,z-.12,side*length*.6,base+.105,tip-.04,0,base+.04,z+.16);
+  }
+ }
+ const geom=new T.BufferGeometry();geom.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geom.computeVertexNormals();return geom;
+}
+geo.bough=spruceBough();
 const dummy=new T.Object3D(),color=new T.Color();
 function pose(x,y,z,sx,sy,sz,ry=0,rx=0,rz=0){
  dummy.position.set(x,y,z);dummy.rotation.set(rx,ry,rz);dummy.scale.set(sx,sy,sz);dummy.updateMatrix();return dummy.matrix;
@@ -18,7 +34,7 @@ function layer(parent,materials,dynamic=false){
  function add(g,c,x,y,z,sx,sy,sz,ry=0,rx=0,rz=0,glow=false){
   const key=g+Number(glow);let batch=batches.get(key);
   if(!batch){
-   const mesh=new T.InstancedMesh(geo[g],glow?materials.glow:materials.solid,dynamic?320:2400);
+   const mesh=new T.InstancedMesh(geo[g],glow?materials.glow:materials.solid,dynamic?320:(g==='bough'?4200:2400));
    mesh.frustumCulled=false;mesh.count=0;parent.add(mesh);batch={mesh};batches.set(key,batch);
   }
   const m=batch.mesh,i=m.count++;m.setMatrixAt(i,pose(x,y,z,sx,sy,sz,ry,rx,rz));m.setColorAt(i,color.setHex(c));
@@ -37,15 +53,29 @@ function sceneMap(scene,night,mats){
    put('cone',tint,x,base+.18,z,.09,.40,.09,a,.14);
    if(i%4===0){put('cone',tint,x+.13,base+.09,z,.085,.24,.08,-a,0,-.4);put('rock',0xa9a9a0,x+.1,base+.35,z,.065,.075,.065);}
   }
+  for(let i=0;i<80;i++){
+   const a=i*2.399,r1=r*Math.sqrt((i+.5)/80),x=cx+Math.cos(a)*r1,z=Math.sin(a)*r1;
+   put('ball',0xb6cbd0,x,terrain(night,x,z)+.006,z,1.1+.75*(i%4),.045,.6+.34*(i%3),a);
+  }
   for(let i=0;i<48;i++){
    const a=i*2.4,x=cx+Math.cos(a)*(r-.6),z=Math.sin(a)*(r-.6);
    put('rock',i%2?0x58716b:0x7c7870,x,0,z,1+i%3*.4,.38+i%4*.2,.9,a);
   }
   for(let i=0;i<28;i++){
-   const a=i*2.399,r1=r*(.78+.15*(Math.sin(i*32)+1)/2),x=cx+Math.cos(a)*r1,z=Math.sin(a)*r1;
+   const a=i*2.399,r1=r*(i%6===0?.42:.78+.15*(Math.sin(i*32)+1)/2),x=cx+Math.cos(a)*r1,z=Math.sin(a)*r1;
    if(maps[night].lamps.some(p=>Math.hypot(x-p[0],z-p[2])<3))continue;
-   const h=terrain(night,x,z);put('pole',C.wood,x,h+.8,z,.13,1.6,.13);
-   for(let j=0;j<3;j++)put('cone',j%2?0x3e7564:C.grass,x,h+1.7+j*.53,z,1.05-j*.2,1.7-j*.2,1.05-j*.2);
+   const h=terrain(night,x,z),height=3.3+(1+Math.sin(i*13.7))*1.25;
+   put('cone',0x70533f,x,h+height*.48,z,.22,height,.22,a);
+   for(let tier=0;tier<7;tier++){
+    const u=tier/7,cy=h+height*(.24+.73*u);
+    for(let j=0;j<6;j++){
+     const ang=a+j*Math.PI/3+tier*2.4,span=height*(.35-.28*u)*(.89+.11*Math.sin(j+i));
+     put('bough',j%2?0x29574b:0x386858,x,cy,z,span,span,span,ang);
+     if((tier+j+i)%3!==0)put('bough',0xc3d6d7,x,cy+.055,z,span*.68,span*.66,span*.84,ang);
+    }
+   }
+   put('snowball',0xbfced4,x,h+.035,z,1.25,.09,.96,a);
+
   }
   for(let i=0;i<42;i++){const a=i*2.399,r1=r+4+i%7;
    put('ball',0x686c97,cx+Math.cos(a)*r1,-2.7-i%3*.35,Math.sin(a)*r1,4.6+i%4,1.05,3.1+i%3);}
@@ -107,7 +137,7 @@ export function makeWorld(canvas){
  const sprites=[];let used=0;
  function halo(x,y,z,size){if(!sprites[used]){sprites[used]=new T.Sprite(haloMat);scene.add(sprites[used]);}const g=sprites[used++];g.visible=true;g.position.set(x,y,z);g.scale.setScalar(size);}
  const portraitLight=new T.DirectionalLight(0xffedda,2.1);portraitLight.position.set(3,4,5);scene.add(portraitLight);
- const mats={solid:new T.MeshLambertMaterial(),glow:new T.MeshBasicMaterial()};
+ const mats={solid:new T.MeshLambertMaterial({side:T.DoubleSide}),glow:new T.MeshBasicMaterial()};
  const backdrop=layer(scene,mats);
  backdrop.add('disc',C.sea,30,-4,0,175,1,175);
  backdrop.add('ball',C.core,-34,30,-92,6,6,6,0,0,0,true);
@@ -124,33 +154,43 @@ export function makeWorld(canvas){
    put('box',C.core,mid.x,mid.y,mid.z,.055,delta.length(),.055,rot.y,rot.x,rot.z,true);prev=next;
   }
  }
+ const seeds=new Float32Array(1150*3);
+ for(let i=0;i<seeds.length;i++){const value=Math.sin(i*12.9898+.7)*43758.5453;seeds[i]=value-Math.floor(value);}
+ const flakes=new T.BufferGeometry();flakes.setAttribute('position',new T.BufferAttribute(seeds,3));
+ const snowMaterial=new T.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{time:{value:0},center:{value:new T.Vector3()}},
+ vertexShader:`uniform float time;uniform vec3 center;varying float opacity;
+ void main(){vec3 seed=position;vec3 shift=vec3(sin(time*.42+seed.y*15.)*.55+time*.19,-time*(.72+seed.x*.62),cos(time*.38+seed.x*22.)*.34);
+ vec3 p=mod(seed*vec3(32.,15.,32.)+shift-center,vec3(32.,15.,32.))+center-vec3(16.,6.,16.);
+ vec4 mv=viewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp((24.+seed.z*14.)/max(1.,-mv.z),1.4,5.);
+ opacity=smoothstep(1.,3.,-mv.z)*(.45+.45*seed.z);}`,
+ fragmentShader:`varying float opacity;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(.88,.94,1.,opacity*(1.-smoothstep(.18,.5,d)));}`});
+ const snowfall=new T.Points(flakes,snowMaterial);snowfall.frustumCulled=false;scene.add(snowfall);
  let previousNight=0,disposeMap=()=>{},lastMode;
  function body(s,t){
   const p=s.player,[x,y,z]=p.pos;
   if(p.respawn||p.inv&&Math.floor(s.sim/6)%2)return;
   const yaw=s.facing,local=(dx,h,dz)=>[x+dx*Math.cos(yaw)+dz*Math.sin(yaw),y+h,z-dx*Math.sin(yaw)+dz*Math.cos(yaw)];
-  const red=0xce201c,black=0x201c29,gold=0xffb526,white=0xfff4dc;
+  const snow=0xeaf6ff,coal=0x272832,red=0xaf2434;
   const part=(shape,c,dx,h,dz,sx,sy,sz,tilt=0)=>put(shape,c,...local(dx,h,dz),sx,sy,sz,yaw,0,tilt);
-  part('ball',black,0,.86,0,.38,.54,.26);part('ball',red,0,1.04,.05,.4,.24,.25);
-  part('ball',gold,0,1.04,.31,.15,.16,.05);part('box',white,0,1.04,.36,.055,.19,.025,-.55);
-  part('ball',0xe2ac8d,0,1.68,.03,.52,.52,.43);
+  part('snowball',snow,0,.49,0,.55,.51,.52);
+  part('snowball',snow,0,1.08,0,.425,.43,.395);
+  part('snowball',snow,0,1.67,0,.39,.37,.38);
   for(const d of [-1,1]){
-   part('ball',white,d*.21,1.66,.401,.14,.096,.036,d*.2);part('ball',black,d*.20,1.66,.438,.063,.085,.023);
-   part('box',black,d*.21,1.77,.414,.25,.055,.035,d*.23);
-   part('ball',black,d*.43,.89,.02,.18,.23,.16);part('ball',red,d*.52,.67,.15,.225,.235,.23);
-   part('box',gold,d*.52,.69,.35,.27,.055,.035);
-   part('ball',black,d*.18,.40,0,.16,.25,.16);
-   part('box',gold,d*.18,.23,.20,.21,.06,.08);
-   part('ball',red,d*.18,.17,.08+.07*Math.sin(t*10)*d*Math.min(1,Math.hypot(...p.vel)),.19,.16,.28);
+   part('snowball',coal,d*.145,1.72,.343,.048,.055,.034);
+   part('snowball',0xffffff,d*.145-.012,1.739,.374,.012,.012,.009);
+   part('snowball',0xefb4a7,d*.238,1.625,.289,.078,.044,.024);
+   part('pole',0x68513d,d*.51,1.16,.012,.034,.45,.034,-d*.89);
+   part('pole',0x68513d,d*.69,1.35,.012,.025,.19,.025,-d*.36);
+   part('pole',0x68513d,d*.74,1.31,.012,.021,.16,.021,-d*1.1);
   }
-  part('box',0x683d38,.055,1.47,.411,.16,.027,.022,.12);part('rock',0xd99673,0,1.60,.449,.047,.047,.059);
-  part('box',gold,-.02,.98,-.32,.26,.58,.09,-.25);part('ball',white,0,2,-.02,.52,.32,.44);
-  for(let i=0;i<9;i++){const angle=i*2.399,dx=.32*Math.cos(angle),dz=.27*Math.sin(angle);
-   part('cone',white,dx+.08,2.24+(i%3)*.08,dz,.23,.64,.21,-.35-dx*.6);
-   if(i%2===0)part('cone',red,dx+.09,2.19+(i%3)*.08,dz+.15,.115,.52,.095,-.42);
-  }
-  part('cone',0xe7bd78,0,1.64,-.39,.43,.22,.28,.24);
-  part('ball',C.lit,.33,1.48,-.42,.09,.13,.09);
+  put('cone',0xf58a34,...local(0,1.63,.435),.073,.25,.073,yaw,Math.PI*.48);
+  for(let i=-2;i<=2;i++)part('snowball',coal,i*.057,1.525+i*i*.012,.341,.019,.019,.016);
+  for(const [h,dz] of [[1.18,.368],[.94,.37],[.59,.51]])part('snowball',coal,0,h,dz,.044,.044,.022);
+  part('snowball',red,0,1.38,.01,.36,.11,.35);
+  part('box',red,.19,1.15,.31,.13,.41,.068,.21);part('box',0xe7b77b,.217,1.02,.348,.125,.034,.019,.21);
+  part('hat',0xd9ae70,0,2.095,0,.56,.36,.56);
+  for(let i=0;i<4;i++){const radius=.54-i*.106;put('ring',0x936c43,...local(0,1.923+i*.068,0),radius,radius,.18,yaw,Math.PI/2,0);}
+  part('pole',0x845b35,.45,1.84,.14,.012,.18,.012);part('ball',C.lit,.45,1.69,.14,.08,.105,.08);halo(...local(.45,1.69,.14),.35);
   if(p.carried){const hand=local(.54,.84,.41);halo(...hand,.7+p.carried*.035);put('rock',C.gold,...hand,.13,.21,.13,t,0,-.4,true);}
 
  }
@@ -163,6 +203,7 @@ export function makeWorld(canvas){
   if(menu){target.set(x+.2,y+1.85,z+4.3);look.set(x-1.48,y+1.32,z);}
   else{target.set(x+Math.sin(eye)*8.4,Math.max(-2,y)+5.5,z+Math.cos(eye)*8.4);look.set(x-Math.sin(eye)*2,Math.max(-2,y)+1,z-Math.cos(eye)*2);}
   camera.position.lerp(target,mode===lastMode?.22:1);camera.lookAt(look);lastMode=mode;
+  snowMaterial.uniforms.time.value=t;snowMaterial.uniforms.center.value.copy(camera.position);
   actors.reset();used=0;body(s,t);let lit=0;
   for(const l of s.lanterns){const [x,y,z]=l.pos;lit+=Number(l.lit);
    const blink=l.lit&&l.oil<1800&&s.sim%60>=30;
