@@ -1,0 +1,34 @@
+✔ declared CLI writes deterministic JSONL and handles invalid files atomically (1497.889825ms)
+✔ scenario setup is silent and tick zero precedes any input (5.809315ms)
+✔ sparse frames persist, yaw uses contract axes and diagonals are normalized (5.254258ms)
+✔ jump is edge triggered, gravity returns the feet to Y=0 (1.517827ms)
+✔ pickup uses inclusive horizontal radius, respects capacity and leaves the excess (0.833889ms)
+✔ interact deposits partial stock, requires a fresh press and lights once (0.876336ms)
+✔ pulse spends stock, pushes on XZ, scores stuns and respects range and cooldown (18.373083ms)
+✔ shade pursues at declared speed, hits once per invulnerability interval (3.164259ms)
+✔ lit lantern keeps shades outside the safe radius and protects the player (5.243588ms)
+✔ fifth lamp ends at event tick with win bonuses and remaining time (1.595491ms)
+✔ dawn stops the run early and end follows the scheduled final snapshot (3.409125ms)
+✔ seeded spawns have stable unique ids, disabled generators stay empty (71.365655ms)
+✔ full Night 1 can be won from the actual default map using only contract inputs (153.671338ms)
+✔ snapshot coordinates round to three decimals without quantizing simulation (0.338342ms)
+✔ three standard maps, spawn coordinates, lamp ids, duration and initial occupancy (9.914212ms)
+✔ dash starts facing +Z, lasts twelve ticks, edge and cooldown; airborne holds height (3.893574ms)
+✔ pause advances wall ticks while all gameplay clocks and world remain frozen (1.152293ms)
+✔ fall ignores invulnerability, costs exactly one flame and all stock, respawns after 60 (2.065004ms)
+✔ two islands joined by bridge; pad locks flight toward opposite island (10.170578ms)
+✔ ramps climb to Y=3, bell pad lands atop Y=6, tier walls and tower block climbing (6.632619ms)
+✔ wind begins at 1800 and pushes 2 m/s for five seconds; warning precedes gust (60.466575ms)
+✔ drifter steals despite invulnerability; a pulse refunds stolen stock as dropped motes (16.949914ms)
+✔ charm gives 600 ticks, faster movement, dash retrigger and 2700-tick respawn (62.086553ms)
+✔ scheduled entities appear at exact sim ticks and capacities are enforced (202.905469ms)
+✔ score from deposits, last-tick win and no-flames precedence (1.697806ms)
+✔ drop TTL, ID ordering, one hit per tick, 3D pulse and height gates (5.62247ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1650.203706
