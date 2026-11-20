@@ -13,7 +13,7 @@ await server.listen();
 const browser=await chromium.launch({channel:'chrome',args:['--enable-unsafe-swiftshader']});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[],observed=[],shots=[];let index=0;
- page.on('pageerror',e=>errors.push(e.message));
+ page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.addInitScript(()=>{
    let clock=0,queue=[];
    window.requestAnimationFrame=f=>queue.push(f);
@@ -31,12 +31,12 @@ try{
  await page.keyboard.down('d');
  for(let i=0;i<22;i++){if(i===8)await page.keyboard.press('Shift');if(i===15)await page.keyboard.press('Space');await advance(6);await shot(.10);}
  await page.keyboard.up('d');await page.keyboard.press('p');await shot(.8);await click('Cài đặt');await shot(.6);await click('Quay lại');await click('Tiếp tục');
- let losing=false;
+ let losing=false,timeout=false;
  await page.route(/\/src\/game\.js(?:\?|$)/,async route=>{
    const response=await route.fetch();let source=await response.text();
    assert(source.includes('export function createGame('));source=source.replace('export function createGame(','function createBaseGame(');
    source+='\nexport function createGame(seed=12,config={},night=1){ const base=createBaseGame(seed,config,night), last=base.lanterns.at(-1);'+
-    (losing?'return createBaseGame(seed,{player:{flames:1},random_motes:false,shades:[{pos:[0,.8,0]}]},night);':
+    (timeout?'return createBaseGame(seed,{time_left_s:0.1,random_motes:false,random_shades:false},night);':losing?'return createBaseGame(seed,{player:{flames:1},random_motes:false,shades:[{pos:[0,.8,0]}]},night);':
     'return createBaseGame(seed,{random_motes:false,random_shades:false,random_drifters:false,time_left_s:0.15,player:{pos:last.pos,carried:1},lanterns:base.lanterns.map(l=>({id:l.id,lit:l.id!==last.id,deposited:l.id===last.id?9:10}))},night);')+'}';
    await route.fulfill({response,body:source});
  });
@@ -46,7 +46,11 @@ try{
  for(let n=1;n<=3;n++){
   assert.match(await page.locator('dialog h2').innerText(),new RegExp('Đêm '+n));await shot(1.2);
   await click('Vào đảo');await advance();await shot(1.4,'night-'+n);
-  await page.keyboard.press('e');await advance();await advance(8);await advance(1);assert.equal(await page.locator('dialog h2').innerText(),'Đảo đã sáng đèn');
+  await page.keyboard.press('e');await advance();await advance(8);await advance(1);
+  assert(await page.locator('#skip-dawn').isVisible());await advance(270);
+  if(n===1)await page.screenshot({path:out+'/mat-troi-moc.jpg',quality:93});
+  if(n===2)await click('Bỏ qua bình minh');else await advance(123);
+  assert.equal(await page.locator('dialog h2').innerText(),'Đảo đã sáng đèn');
   const msg=await page.locator('dialog p').innerText();observed.push(msg);await shot(1.2);
   await click(n<3?'Đêm kế tiếp':'Đón bình minh');
  }
@@ -56,7 +60,10 @@ try{
  const [entry]=await page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.ranking')));assert.equal(entry.score,total);assert.equal(entry.nights_won,3);
  await click('Về menu');losing=true;await page.reload();await page.locator('#game.menu').waitFor();
  await click('Bắt đầu');await click('Vào đảo');await advance();assert.equal(await page.locator('dialog h2').innerText(),'Mây đã tắt lửa');await click('Chơi lại Đêm này');
- assert.match(await page.locator('dialog h2').innerText(),/Đêm 1/);assert.deepEqual(errors,[]);
+ assert.match(await page.locator('dialog h2').innerText(),/Đêm 1/);
+ timeout=true;await page.reload();await click('Bắt đầu');await click('Vào đảo');await advance(8);
+ assert(await page.locator('#skip-dawn').isVisible());await advance(391);
+ assert.equal(await page.locator('dialog h2').innerText(),'Bình minh đã đến');assert.deepEqual(errors,[]);
  const perf=JSON.parse(await readFile(out+'/browser.json')),headless=JSON.parse(await readFile(out+'/headless-win32.json'));
  await page.setContent('<body style="background:#0e1430;color:#f5f1e6;font:24px/1.6 system-ui;padding:7vw"><h1>Ba hòn đảo · Kết quả chạy thật</h1><pre style="font:24px/1.6 system-ui" id="proof"></pre></body>');
  await page.locator('#proof').evaluate((e,s)=>e.textContent=s,'Chrome 1280 × 720 · '+perf.mean_fps.toFixed(1)+' FPS trung bình\n'+headless.runs.map(r=>'Đêm '+r.night+' · '+r.ticks+' tick · '+r.elapsed_ms+' ms').join('\n')+'\nChuỗi ba Đêm, Bình Minh và chơi lại: đạt');

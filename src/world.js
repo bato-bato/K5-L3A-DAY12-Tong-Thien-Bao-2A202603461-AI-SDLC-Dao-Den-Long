@@ -207,18 +207,24 @@ export function makeWorld(canvas){
   if(p.carried){const hand=local(.54,.84,.41);halo(...hand,.7+p.carried*.035);put('rock',C.gold,...hand,.13,.21,.13,t,0,-.4,true);}
 
  }
- return function draw(s,mode,t,yaw=0){
+ const nightFog=new T.Color(C.fog),morningFog=new T.Color(0xe6a080);
+ return function draw(s,mode,t,yaw=0,dawn=0){
   if(previousNight!==s.night){disposeMap();disposeMap=sceneMap(scene,s.night,mode==='bench'?{solid:mats.solid,glow:mats.glow}:mats,mode==='bench');previousNight=s.night;lastMode=null;}
   const w=canvas.clientWidth,h=canvas.clientHeight;
   if(canvas.width!==w||canvas.height!==h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   const [x,y,z]=s.player.pos,menu=mode==='menu',eye=yaw*Math.PI/180;
   portraitLight.visible=menu;
   if(mode==="bench"){const a=t*2*Math.PI/15;target.set(30*Math.cos(a),15,-30*Math.sin(a));look.set(0,0,0);}
+  else if(mode==='sunrise'||dawn>0){
+   const center=s.map.islands.at(-1)[0];
+   target.set(center+3,12+2*dawn,34);look.set(center+2,11,-14);
+  }
   else if(menu){target.set(x+.2,y+1.85,z+4.3);look.set(x-1.48,y+1.32,z);}
   else{target.set(x+Math.sin(eye)*8.4,Math.max(-2,y)+4.8,z+Math.cos(eye)*8.4);look.set(x-Math.sin(eye)*2,Math.max(-2,y)+1.65,z-Math.cos(eye)*2);}
   camera.position.lerp(target,mode===lastMode&&mode!=="bench"?.22:1);camera.lookAt(look);lastMode=mode;
   standard.visible=mode==='bench';landscape.group.visible=!standard.visible;
-  landscape.sky.position.copy(camera.position);
+  landscape.sky.position.copy(camera.position);landscape.setSunrise(dawn);
+  scene.fog.color.copy(nightFog).lerp(morningFog,dawn);key.color.setHex(dawn?0xffcb93:0xffead0);
   clock.value=s.reduced?0:t;strength.value=s.reduced?0:(s.wind.active?1.7:1);
   snowMaterial.uniforms.time.value=t;snowMaterial.uniforms.center.value.copy(camera.position);
   snowfall.visible=mode!=="bench"&&!s.reduced;
@@ -237,7 +243,7 @@ export function makeWorld(canvas){
    if(l.lit&&!blink)halo(x,y+2.45,z,5);
    if(l.oil>=1800)put('ring',C.lit,x,y+.055,z,6,6,6,0,Math.PI/2,0,true);
   }
-  ambient.intensity=.15+.55*lit/s.lanterns.length;
+  ambient.intensity=.15+.55*lit/s.lanterns.length+.72*dawn;
   for(const m of s.motes){const [x,y,z]=m.pos,cy=y+.7+.14*Math.sin(t*2+x);
    halo(x,cy,z,1.55);put('box',C.gold,x+.08,cy+.16,z,.075,.30,.07,0,0,-.48,true);put('box',C.gold,x-.06,cy-.12,z,.075,.26,.07,0,0,-.48,true);put('ball',C.halo,x,cy,z,.19,.17,.19,0,0,0,true);put('ball',C.fly,x,cy+.09,z,.12,.13,.12,0,0,0,true);}
   for(const sh of s.shades){const [x,y,z]=sh.pos,muted=sh.state==='stunned';

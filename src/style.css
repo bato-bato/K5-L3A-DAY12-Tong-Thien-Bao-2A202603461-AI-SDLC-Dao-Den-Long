@@ -38,3 +38,5 @@ dialog{max-width:min(94vw,640px);max-height:88vh;overflow:auto}#keymap{display:g
 @keyframes greeting-arrive{0%,35%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){#greeting[open] .greeting-card{animation:none}}
 @media(max-height:460px){#greeting[open]{place-items:safe center}.greeting-card{padding:16px}#greeting h2{font-size:30px;margin:4px}}
+
+#skip-dawn{position:absolute;bottom:5%;right:4%;z-index:2}

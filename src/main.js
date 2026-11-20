@@ -32,8 +32,10 @@ function dialog(mode,title,body,actions){
  for(const [label,fn] of actions){const b=document.createElement('button');b.className='primary';b.textContent=label;b.onclick=fn;el('actions').append(b);}
  el('dialog').showModal();hud();
 }
-function home(){closeDialog();clear();screen='menu';game=createGame();total=0;yaw=0;hud();}
+let dawnProgress=0,dawnStarted=0;
+function home(){dawnProgress=0;closeDialog();clear();screen='menu';game=createGame();total=0;yaw=0;hud();}
 function introduce(night){
+ dawnProgress=0;
  spawnNotice=null;game=createGame(seed,{},night);yaw=0;enableSound();
  const messages=['Giữ ít nhất ba đèn sáng đến bình minh. Dầu dưới 30 khiến Bóng Mực có thể tới hút dầu.',
  'Qua cầu tre hoặc dùng bục nhảy để đến đảo bên kia. Giữ túi đom đóm khỏi Gió Lạc.',
@@ -75,6 +77,8 @@ el('world').onpointermove=e=>{if(screen==='play'&&el('world').hasPointerCapture(
 function hud(){
  const play=screen==='play',menu=screen==='menu',p=game.player;
  el('game').className=menu?'menu':'play';el('menu').hidden=!menu;el('hud').hidden=menu;el('touch').hidden=!play;el('pause').hidden=!play;
+ const rising=screen==='sunrise';el('skip-dawn').hidden=!rising;el('help').hidden=rising;
+ if(rising)el('hud').hidden=true;
  el('abilities').hidden=!play;el('legend').hidden=!menu;el('guide').hidden=true;
  el('count').textContent=game.lanterns.filter(l=>l.lit).length+' / '+game.lanterns.length+' · cần '+Math.ceil(.6*game.lanterns.length);
  el('bag').textContent=p.carried+' / '+capacity(p);
@@ -102,15 +106,29 @@ function gameplay(){
  if(game.sim%60===0&&timeLeft(game)<=10)tone(960,.12);
  if(game.sim%180===1)tone([220,261.63,329.63,293.66][Math.floor(game.sim/180)%4],2.2,.035);
  if(game.night===3&&game.sim%1800===1680)tone(310,1.2,.12,'triangle');
- if(['won','lost'].includes(game.status))result();
+ if(['won','lost'].includes(game.status)){
+  if(timeLeft(game)<=0&&game.reason!=='no_flames'){
+   clear();screen='sunrise';dawnStarted=last;hud();el('skip-dawn').focus();
+  }else result();
+ }
 }
+function finishSunrise(){
+ if(screen!=='sunrise')return;
+ dawnProgress=1;result();
+}
+el('skip-dawn').onclick=finishSunrise;
 function frame(t){
  const dt=Math.min(.18,(t-last)/1000);last=t;
  if(screen==='play'||game.status==='paused'){
   bank+=dt;while(bank>=1/60){bank-=1/60;if(screen==='play')gameplay();else if(game.status==='paused')step(game,{pause:false});}
   hud();
  }
- game.reduced=el('reduced').checked;game.accessible=el('palette').checked;const guide=draw?.(game,screen,t/1000,yaw);
+ if(screen==='sunrise'){
+  const progress=Math.min(1,(t-dawnStarted)/6500);
+  if(el('reduced').checked||progress>=1)finishSunrise();
+  else dawnProgress=progress*progress*(3-2*progress);
+ }
+ game.reduced=el('reduced').checked;game.accessible=el('palette').checked;const guide=draw?.(game,screen,t/1000,yaw,dawnProgress);
  if(screen==='play'&&guide&&!guide.visible){el('guide').hidden=false;el('guide').innerHTML='<i>➤</i> '+guide.id;el('guide').firstChild.style.transform='rotate('+((Math.PI/2-guide.angle)*180/Math.PI)+'deg)';}
  requestAnimationFrame(frame);
 }

@@ -36,11 +36,11 @@ export function foliageMaterial(base,clock,strength,bough){
 
 export function nightLandscape(scene,clock){
  const group=new T.Group();scene.add(group);
- const uniforms={time:clock,moonDir:{value:moon}};
+ const uniforms={time:clock,moonDir:{value:moon},sunrise:{value:0},sunDir:{value:new T.Vector3()}};
  const sky=new T.Mesh(new T.SphereGeometry(185,48,20),new T.ShaderMaterial({
   side:T.BackSide,depthWrite:false,uniforms,
   vertexShader:`varying vec3 ray;void main(){ray=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-  fragmentShader:`varying vec3 ray;uniform vec3 moonDir;uniform float time;${noise}
+  fragmentShader:`varying vec3 ray;uniform vec3 moonDir,sunDir;uniform float time,sunrise;${noise}
   void main(){
    vec3 d=normalize(ray);float elevation=max(0.,d.y);
    vec3 color=mix(vec3(.070,.097,.19),vec3(.009,.015,.052),smoothstep(0.,.55,elevation));
@@ -52,6 +52,16 @@ export function nightLandscape(scene,clock){
    vec2 p=d.xz/max(.09,d.y+.12);p=p*vec2(1.45,3.1)+vec2(time*.014,0.);
    float cloud=smoothstep(.48,.79,.60*noise2(p)+.28*noise2(2.*p)+.12*noise2(4.*p));
    color=mix(color,vec3(.18,.21,.31)+.12*exp(-dist*7.),cloud*.67*smoothstep(-.03,.10,d.y));
+   if(sunrise>0.){
+    float warmth=smoothstep(0.,.65,sunrise),alt=smoothstep(0.,.52,elevation);
+    vec3 horizon=mix(vec3(.74,.22,.22),vec3(1.,.56,.29),sunrise);
+    vec3 morning=mix(horizon,vec3(.19,.42,.73),alt);
+    float solarDist=length(d-sunDir);
+    morning+=vec3(.74,.38,.12)*exp(-solarDist*8.);
+    morning=mix(morning,vec3(1.,.94,.65),1.-smoothstep(.032,.035,solarDist));
+    morning=mix(morning,mix(vec3(.75,.39,.40),vec3(1.,.72,.51),sunrise),cloud*.45*smoothstep(0.,.08,d.y));
+    color=mix(color,morning,warmth);
+   }
    gl_FragColor=vec4(color,1.);
    #include <colorspace_fragment>
   }`
@@ -59,7 +69,7 @@ export function nightLandscape(scene,clock){
  sky.renderOrder=-10;group.add(sky);
  const water=new T.Mesh(new T.PlaneGeometry(470,470),new T.ShaderMaterial({
   uniforms,vertexShader:`varying vec3 waterPos;void main(){vec4 p=modelMatrix*vec4(position,1.);waterPos=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}`,
-  fragmentShader:`uniform float time;uniform vec3 moonDir;varying vec3 waterPos;
+  fragmentShader:`uniform float time,sunrise;uniform vec3 moonDir,sunDir;varying vec3 waterPos;
   void main(){
    vec2 p=waterPos.xz;float t=time*.85;
    float a=sin(dot(p,vec2(.34,.79))-t),b=sin(dot(p,vec2(-.52,1.47))+t*1.3+.7*a);
@@ -70,10 +80,12 @@ export function nightLandscape(scene,clock){
    float ripple=.5+.5*(a*.3+b*.4+c*.3);
    vec3 water=mix(vec3(.009,.035,.068),vec3(.022,.10,.135),ripple);
    water+=vec3(.90,.75,.47)*(pow(align,150.)*.48+pow(align,760.)*.68);
-   gl_FragColor=vec4(mix(water,vec3(.065,.092,.17),smoothstep(65.,190.,distance(cameraPosition,waterPos))*.76),1.);
+   vec3 horizonWater=vec3(.065,.092,.17);
+   if(sunrise>0.){float light=max(0.,dot(normal,normalize(eye+sunDir)));float blend=smoothstep(0.,.72,sunrise);water=mix(water,vec3(.08,.21,.27)+ripple*.045+vec3(1.,.56,.20)*(pow(light,95.)*.8+pow(light,550.)*.8),blend);horizonWater=mix(horizonWater,vec3(.52,.36,.32),blend);}
+   gl_FragColor=vec4(mix(water,horizonWater,smoothstep(65.,190.,distance(cameraPosition,waterPos))*.76),1.);
    #include <colorspace_fragment>
   }`
  }));
  water.rotation.x=-Math.PI/2;water.position.set(30,-3.95,0);group.add(water);
- return {group,sky};
+ return {group,sky,setSunrise(progress){uniforms.sunrise.value=progress;uniforms.sunDir.value.set(.22,-.075+.30*progress,-1).normalize();}};
 }
