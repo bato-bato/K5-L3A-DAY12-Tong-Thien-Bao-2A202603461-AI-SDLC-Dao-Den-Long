@@ -1,3 +1,4 @@
+import {initGreeting} from './greeting.js';
 import {capacity,createGame,step,nearestLantern,timeLeft,maps} from './game.js';
 import {runBench} from './benchmark.js';
 import {makeWorld} from './world.js';
@@ -118,3 +119,4 @@ function applyPalette(){document.body.classList.toggle('accessible',el('palette'
 el('palette').onchange=()=>{try{localStorage.setItem('lantern.palette',el('palette').checked?'on':'off');}catch{}applyPalette();};applyPalette();
 const params=new URLSearchParams(location.search);
 if(params.has("bench")){document.body.classList.add("benchmark");runBench(draw,Number(params.get("bench")),Number(params.get("duration")));}else{hud();requestAnimationFrame(frame);}
+initGreeting();
