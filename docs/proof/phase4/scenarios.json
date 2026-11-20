@@ -1,0 +1,476 @@
+{
+  "dash": {
+    "end": {
+      "type": "end",
+      "ticks": 14,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 1
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "dash",
+        "data": {}
+      }
+    ],
+    "sha256": "62ee7b62e1d0b2f1b2666947aa7e42f28b3b8b47abdd6ac0e543e0d271113c96"
+  },
+  "airDash": {
+    "end": {
+      "type": "end",
+      "ticks": 20,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 1
+        }
+      },
+      {
+        "type": "event",
+        "tick": 5,
+        "name": "dash",
+        "data": {}
+      }
+    ],
+    "sha256": "d4b8504c91a63fb40135d3ffc43bcd633d0bf9db3bc83147ac11c3526f96b168"
+  },
+  "pause": {
+    "end": {
+      "type": "end",
+      "ticks": 75,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 3
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "paused",
+        "data": {}
+      },
+      {
+        "type": "event",
+        "tick": 71,
+        "name": "resumed",
+        "data": {}
+      }
+    ],
+    "sha256": "70a3b065bd3461e7dae38a4658c67eeab2769b14ef7f756438c2108b30600f66"
+  },
+  "fall": {
+    "end": {
+      "type": "end",
+      "ticks": 63,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 1
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "player_hit",
+        "data": {
+          "by": "fall",
+          "flames": 2,
+          "dropped": 0,
+          "lost": 8
+        }
+      }
+    ],
+    "sha256": "8758ba47f4f97f9d7c3b7774a3361df98f84b83da4abfcaff6fa1c8a56b52ff2"
+  },
+  "bridge": {
+    "end": {
+      "type": "end",
+      "ticks": 400,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 2
+        }
+      }
+    ],
+    "sha256": "0a78f28b3a0d163922d0f2fb20e96e08cdfd0d36b26ec16a901a7153640b98b0"
+  },
+  "pad": {
+    "end": {
+      "type": "end",
+      "ticks": 90,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 2
+        }
+      }
+    ],
+    "sha256": "ac71a050e0cd0b04900a037d3ea05d66ac94a63bafa54c4686f0a85ee5c417c3"
+  },
+  "bellPad": {
+    "end": {
+      "type": "end",
+      "ticks": 70,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 3
+        }
+      }
+    ],
+    "sha256": "61afd9d41108147755417379bac7fcaddd409e60be4427394d15b317937535a2"
+  },
+  "ramp": {
+    "end": {
+      "type": "end",
+      "ticks": 90,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 3
+        }
+      }
+    ],
+    "sha256": "f55f7abe803d989c91d064932d82e9b4bfa1ea8c31fdeb1adf8e76a7eb8d92f5"
+  },
+  "wind": {
+    "end": {
+      "type": "end",
+      "ticks": 2100,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 3
+        }
+      }
+    ],
+    "sha256": "10478b884b37de7939de97e7c11945830af314c94c884a3a1e40cd6269bebd35"
+  },
+  "steal": {
+    "end": {
+      "type": "end",
+      "ticks": 5,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 2
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "drifter_steal",
+        "data": {
+          "drifter_id": "D1",
+          "amount": 3,
+          "carried": 5
+        }
+      },
+      {
+        "type": "event",
+        "tick": 2,
+        "name": "drifter_drop",
+        "data": {
+          "drifter_id": "D1",
+          "amount": 3
+        }
+      },
+      {
+        "type": "event",
+        "tick": 2,
+        "name": "pulse",
+        "data": {
+          "stunned_ids": []
+        }
+      },
+      {
+        "type": "event",
+        "tick": 3,
+        "name": "mote_picked",
+        "data": {
+          "carried": 3
+        }
+      },
+      {
+        "type": "event",
+        "tick": 3,
+        "name": "mote_picked",
+        "data": {
+          "carried": 4
+        }
+      },
+      {
+        "type": "event",
+        "tick": 3,
+        "name": "mote_picked",
+        "data": {
+          "carried": 5
+        }
+      }
+    ],
+    "sha256": "135d0c2dd5ca78d8ede777541233148ee4800eed9fc69a28b073b93e1dc96e23"
+  },
+  "flee": {
+    "end": {
+      "type": "end",
+      "ticks": 242,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 2
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "pulse",
+        "data": {
+          "stunned_ids": []
+        }
+      }
+    ],
+    "sha256": "d1889c2c87eecd0527d726c07db7cd2755a348a30dbcfecd6a5a741bdc89ccbd"
+  },
+  "charm": {
+    "end": {
+      "type": "end",
+      "ticks": 625,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 2
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "charm_picked",
+        "data": {
+          "charm_id": "C1",
+          "charm_ticks": 600
+        }
+      },
+      {
+        "type": "event",
+        "tick": 2,
+        "name": "dash",
+        "data": {}
+      },
+      {
+        "type": "event",
+        "tick": 16,
+        "name": "dash",
+        "data": {}
+      }
+    ],
+    "sha256": "fb9cc3f05d86c49edbf64e904ca7876415ef74d7ff81fccc40621d2705593ca5"
+  },
+  "spawns": {
+    "end": {
+      "type": "end",
+      "ticks": 2400,
+      "state": "playing",
+      "score": 0
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 2
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "charm_picked",
+        "data": {
+          "charm_id": "C1",
+          "charm_ticks": 600
+        }
+      },
+      {
+        "type": "event",
+        "tick": 300,
+        "name": "shade_spawned",
+        "data": {
+          "id": "S1"
+        }
+      },
+      {
+        "type": "event",
+        "tick": 300,
+        "name": "shade_spawned",
+        "data": {
+          "id": "S2"
+        }
+      },
+      {
+        "type": "event",
+        "tick": 720,
+        "name": "shade_spawned",
+        "data": {
+          "id": "S3"
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1140,
+        "name": "shade_spawned",
+        "data": {
+          "id": "S4"
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1560,
+        "name": "shade_spawned",
+        "data": {
+          "id": "S5"
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1980,
+        "name": "shade_spawned",
+        "data": {
+          "id": "S6"
+        }
+      },
+      {
+        "type": "event",
+        "tick": 2400,
+        "name": "shade_spawned",
+        "data": {
+          "id": "S7"
+        }
+      }
+    ],
+    "sha256": "639e81f460a80acff380c42ea32f7cdf43fedc9ebd5e2c4be9cc09b8416ff498"
+  },
+  "priority": {
+    "end": {
+      "type": "end",
+      "ticks": 1,
+      "state": "won",
+      "score": 1046
+    },
+    "events": [
+      {
+        "type": "event",
+        "tick": 0,
+        "name": "night_start",
+        "data": {
+          "night": 1
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "deposit",
+        "data": {
+          "lantern_id": "L5",
+          "amount": 10,
+          "deposited": 10
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "lantern_lit",
+        "data": {
+          "lantern_id": "L5",
+          "relight": false
+        }
+      },
+      {
+        "type": "event",
+        "tick": 1,
+        "name": "game_over",
+        "data": {
+          "result": "won",
+          "reason": "dawn_survived"
+        }
+      }
+    ],
+    "sha256": "674efa1f8dcc8490f9aceed32c8d3d0c471b7a94167aaeb145611f10e7a69d0c"
+  }
+}

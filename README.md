@@ -1,19 +1,61 @@
-# Đảo Đèn Lồng · Đèn cạn dầu
+# Đảo Đèn Lồng · Bình minh v1.0.0
 
-[Bản chơi offline](docs/demo/choi-ngay.html) · [Ảnh Mây người tuyết trong game](docs/proof/winter/nguoi-tuyet.jpg) · [Quyết định thiết kế và thay đổi](docs/phase3.md)
+[**Tải bản chơi**](https://github.com/bato-bato/K5-L3A-DAY12-Tong-Thien-Bao-2A202603461-AI-SDLC-Dao-Den-Long/releases/tag/v1.0.0) · [Video demo](docs/demo/demo.mp4) · [Retro bốn phase](docs/retro.md)
 
-Mở file HTML bằng Chrome hoặc Edge. Để chạy từ mã nguồn, dùng Node 22.12 trở lên, chạy `npm ci` rồi `npm run dev`.
+![Mây người tuyết đội nón lá giữa đảo](docs/proof/winter/playing.jpg)
 
-Giữ Mây sống đến bình minh với ít nhất **3/5, 4/6, 5/7** đèn sáng lần lượt ở Đêm 1, 2, 3. Mỗi đèn sáng hết 1 dầu mỗi giây. Dưới 30 dầu, Bóng Mực có thể vào hút thêm. Dùng WASD để đi, Space nhảy, Shift lướt, E nạp điện hoặc châm dầu, F tỏa sáng. Bật **Bảng màu dễ phân biệt** trong Cài đặt để đổi màu cảnh báo và Bóng Mực.
+Dẫn Mây qua ba hòn đảo, gom đom đóm, châm dầu và giữ 3/5, 4/6 rồi 5/7 đèn sáng đến bình minh. Bóng Mực có thể hút đèn dưới 30 dầu. Thắp mới cần 10 đom đóm, thắp lại cần 5. Mỗi con dùng để châm hồi 10 dầu. Túi tăng hai chỗ mỗi lần thắp, tối đa 20.
 
-Đèn mới cần 10 đom đóm, đèn từng sáng cần 5 để thắp lại. Một đom đóm châm được 10 dầu. Túi tăng 2 chỗ mỗi lần thắp thành công, tối đa 20. Nạp một con được 5 điểm, thắp lần đầu thêm 100, thắp lại thêm 40. Xung sáng được 5 điểm mỗi mục tiêu, hoặc 15 nếu nó đang hút dầu. Khi thắng, mỗi đèn sáng cho 50 cộng phần nguyên số dầu và mỗi lửa còn lại cho 50 điểm.
+## Chơi
+
+Cần trình duyệt hỗ trợ WebGL 2, bật tăng tốc phần cứng. Bản ZIP có thể chơi offline trên Windows, Linux và macOS. Giải nén rồi mở **docs/demo/choi-ngay.html**. Với bảng điểm dùng chung giữa game và CLI, cài Node.js 22.12+ và chạy từ thư mục repo hoặc thư mục giải nén:
+
+```sh
+node scripts/run.js
+```
+
+Mở **http://127.0.0.1:5173**. Máy chủ chỉ lắng nghe trên máy cá nhân. Khi phát triển từ repo sạch, chạy `npm ci`, `npm run build`, rồi `npm run dev`.
+
+| Hành động | Phím mặc định |
+|---|---|
+| Di chuyển / xoay camera | WASD hoặc mũi tên / kéo chuột ngang |
+| Nhảy / lướt | Space / Shift |
+| Nạp đèn, châm dầu / tỏa sáng | E / F |
+| Tạm dừng | P hoặc Esc |
+
+Trong **Cài đặt**, chọn hành động rồi nhấn phím mới. Game báo phím trùng và lưu thay đổi. Có chữ lớn, giảm chuyển động và bảng màu dễ phân biệt. Mũi tên báo hướng Bóng mới xuất hiện. HUD báo gió, 10 giây cuối và ID đèn yếu.
+
+Nạp một con được 5 điểm, thắp lần đầu thêm 100, thắp lại thêm 40. Tỏa sáng trúng Bóng được 5 điểm, hoặc 15 khi Bóng đang hút. Khi thắng, mỗi đèn sáng cho 50 cộng phần nguyên số dầu, mỗi lửa còn lại cho 50. Sau khi thua hoặc thắng cả ba Đêm, nhập tên để lưu tổng điểm các Đêm đã thắng.
+
+## Bảng điểm
+
+Lệnh dưới xuất top 10 từ cùng tệp mà máy chủ sử dụng, mặc định ở `~/.dao-den-long/leaderboard.json`. Biến môi trường `LANTERN_LEADERBOARD` cho phép chọn đường dẫn khác. Khi mở HTML trực tiếp hoặc dùng hosting tĩnh, điểm thuộc bộ nhớ cục bộ của trình duyệt. Dùng nút **Xuất JSON** trên màn hình Bảng xếp hạng cho cách chơi đó.
+
+```sh
+node scripts/run.js --export-leaderboard out.json
+```
+
+## Kiểm chứng
+
+Chạy các lệnh sau tại gốc repo sau `npm ci`. Benchmark cần Chrome desktop, phiên đồ họa và GPU WebGL 2. Có thể đặt `BROWSER_CHANNEL=msedge` nếu dùng Edge. Để cửa sổ benchmark ở phía trước trong khi đo.
 
 ```sh
 npm run verify
-node scripts/headless.js --night 1 --seed 12 --ticks 120 --scenario scenarios/dawn.json --out dawn.jsonl
+node scripts/headless.js --seed 12 --night 1 --ticks 120 --scenario scenarios/dawn.json --out dawn.jsonl
+node scripts/bench.js --seed 42 --duration 30 --out bench.json
+node --jitless --max-semi-space-size=1 scripts/soak.js --seed 7 --nights 10 --out soak.json
+node scripts/check-release.js
 ```
 
-[Contract v1.2](game.contract.json) · [Bằng chứng Phase 3](docs/proof/phase3/) · [Tài liệu Phase 2](docs/phase2.md)
+Benchmark dùng khung vẽ 1280×720, camera bán kính 30 m, độ cao 15 m, một vòng 15 s. Chrome được khởi động với cờ tắt GPU vsync và giới hạn FPS. Driver hoặc compositor vẫn có thể giới hạn tốc độ trình bày. Mốc đầu là callback của khung cảnh đầu tiên. Sau 3 s làm nóng, lấy khoảng cách thời gian giữa các khung bằng requestAnimationFrame. P95 dùng nearest rank. WebGL chạy qua nhiều tiến trình trình duyệt và GPU dùng chung nên RSS riêng của game là null. Scene dùng Night 1, nhân vật chuẩn giản lược và tắt tuyết rơi.
+
+Soak chạy chung một tiến trình Node, seed đầu 7 rồi tăng mỗi Đêm, thay hướng sau 30 tick. Tắt JIT và giới hạn vùng cấp phát ngắn hạn của V8 ở lệnh soak để hạn chế tăng RSS do biên dịch và garbage collection. Báo cáo lấy RSS thật trước khi chạy input và sau reset cuối.
+
+[Contract v1.3](game.contract.json) · [Số đo benchmark](bench.json) · [Kết quả soak](soak.json) · [Bằng chứng kiểm thử](docs/proof/phase4/) · [Changelog](CHANGELOG.md) · [Nguồn asset](CREDITS.md)
+
+## Sáng tạo của tôi
+
+Mây là người tuyết đội nón lá có đèn nhỏ. Cành thông phủ tuyết, tuyết rơi quanh camera, ánh chớp nối tay với đèn khi nạp. Các hiệu ứng được vẽ ở renderer. Bằng chứng giao diện có trong [bộ ảnh mùa đông](docs/proof/winter/).
 
 # Day 12 — AI SDLC: Đảo Đèn Lồng
 

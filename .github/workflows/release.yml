@@ -1,0 +1,17 @@
+name: Publish game
+on:
+  push:
+    tags:
+      - v1.0.0
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attach offline game and demo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" docs/demo/dao-den-long-web.zip docs/demo/demo.mp4 --verify-tag --title "Đảo Đèn Lồng · Bình minh v1.0.0" --notes-file docs/release.md

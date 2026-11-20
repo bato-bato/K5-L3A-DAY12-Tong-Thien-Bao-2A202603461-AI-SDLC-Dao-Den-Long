@@ -7,7 +7,7 @@ const duration=[0,240,270,300];
 const rounded=n=>Math.round(n*1000)/1000;
 const coords=p=>p.map(rounded);
 const compareId=(a,b)=>a.id.localeCompare(b.id,'en',{numeric:true});
-function rng(seed){
+export function rng(seed){
  let state=seed>>>0;
  return ()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
 }

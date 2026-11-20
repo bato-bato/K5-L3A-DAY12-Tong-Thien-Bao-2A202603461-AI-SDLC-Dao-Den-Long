@@ -3,7 +3,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-const out='docs/proof/winter';await mkdir(out,{recursive:true});
+const out=process.env.PROOF_DIR||'docs/proof/winter';await mkdir(out,{recursive:true});
 const url=process.argv[2]||pathToFileURL(path.resolve('docs/demo/choi-ngay.html')).href;
 const browser=await chromium.launch({channel:process.env.BROWSER_CHANNEL||'chrome',args:['--enable-unsafe-swiftshader']});
 try{

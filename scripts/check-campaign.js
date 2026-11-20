@@ -6,7 +6,7 @@ import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-const out='docs/proof/phase3',frames='.qa/campaign-frames';
+const out=process.env.PROOF_DIR||'docs/proof/phase3',frames='.qa/campaign-frames';
 await Promise.all([mkdir(out,{recursive:true}),mkdir(frames,{recursive:true})]);
 const server=await createServer({configFile:false,server:{port:0,host:'127.0.0.1',watch:null},optimizeDeps:{exclude:['three']},logLevel:'error'});
 await server.listen();
@@ -52,6 +52,8 @@ try{
  }
  assert.equal(await page.locator('dialog h2').innerText(),'Bình Minh');const total=Number((await page.locator('dialog p').innerText()).match(/(\d+)\./)[1]);
  assert.equal(total,observed.reduce((acc,msg)=>acc+Number(msg.match(/· (\d+) điểm/)[1]),0));await shot(1.7,'dawn');
+ await page.locator('[name=name]').fill('May_Win');await click('Lưu điểm');await page.getByText('Đã lưu điểm.').waitFor();
+ const [entry]=await page.evaluate(()=>JSON.parse(localStorage.getItem('lantern.ranking')));assert.equal(entry.score,total);assert.equal(entry.nights_won,3);
  await click('Về menu');losing=true;await page.reload();await page.locator('#game.menu').waitFor();
  await click('Bắt đầu');await click('Vào đảo');await advance();assert.equal(await page.locator('dialog h2').innerText(),'Mây đã tắt lửa');await click('Chơi lại Đêm này');
  assert.match(await page.locator('dialog h2').innerText(),/Đêm 1/);assert.deepEqual(errors,[]);
@@ -59,6 +61,6 @@ try{
  await page.setContent('<body style="background:#0e1430;color:#f5f1e6;font:24px/1.6 system-ui;padding:7vw"><h1>Ba hòn đảo · Kết quả chạy thật</h1><pre style="font:24px/1.6 system-ui" id="proof"></pre></body>');
  await page.locator('#proof').evaluate((e,s)=>e.textContent=s,'Chrome 1280 × 720 · '+perf.mean_fps.toFixed(1)+' FPS trung bình\n'+headless.runs.map(r=>'Đêm '+r.night+' · '+r.ticks+' tick · '+r.elapsed_ms+' ms').join('\n')+'\nChuỗi ba Đêm, Bình Minh và chơi lại: đạt');
  await shot(3);shots.push(shots.at(-1).split('\n')[0]);await writeFile(frames+'/list.txt',shots.join('\n')+'\n');
- await writeFile(out+'/campaign.json',JSON.stringify({scenario:'Each test night initializes its final lamp at 9/10. Only keyboard and menu actions follow.',wins:observed,dawn_total:total,retry_same_night:true,errors},null,2));
+ await writeFile(out+'/campaign.json',JSON.stringify({scenario:'Each test night initializes its final lamp at 9/10. Only keyboard and menu actions follow.',wins:observed,dawn_total:total,saved_nights_won:entry.nights_won,retry_same_night:true,errors},null,2));
  console.log('Campaign UI passed, final total '+total+', '+index+' demo frames.');
 }finally{await browser.close();await server.close();}

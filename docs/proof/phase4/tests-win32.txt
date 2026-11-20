@@ -1,0 +1,40 @@
+✔ declared CLI writes deterministic JSONL and handles invalid files atomically (1474.772ms)
+✔ stacked drain, exact depletion before interaction, relight and expanded bag (28.0605ms)
+✔ pause freezes oil, full lamps excluded, refuel restores protection (1.5045ms)
+✔ drain cadence and pulse score depend on pre-pulse state (4.6152ms)
+✔ thresholds across all nights, dead player loses and lit scenarios give no capacity (3.204ms)
+✔ scenario setup is silent and tick zero precedes any input (4.7707ms)
+✔ sparse frames persist, yaw uses contract axes and diagonals are normalized (5.0263ms)
+✔ jump is edge triggered, gravity returns the feet to Y=0 (1.4626ms)
+✔ pickup uses inclusive horizontal radius, respects capacity and leaves the excess (2.0585ms)
+✔ interact deposits partial stock, requires a fresh press and lights once (1.2501ms)
+✔ pulse spends stock, pushes on XZ, scores stuns and respects range and cooldown (27.0712ms)
+✔ shade pursues at declared speed, hits once per invulnerability interval (2.3879ms)
+✔ lit lantern keeps shades outside the safe radius and protects the player (8.6804ms)
+✔ fifth lamp stays lit until dawn; fuel determines the final bonus (17.8143ms)
+✔ dawn stops the run early and end follows the scheduled final snapshot (2.8277ms)
+✔ seeded spawns have stable unique ids, disabled generators stay empty (93.5431ms)
+✔ old route is evaluated until death or dawn under the replacement rule (135.3488ms)
+✔ snapshot coordinates round to three decimals without quantizing simulation (1.0517ms)
+✔ three standard maps, spawn coordinates, lamp ids, duration and initial occupancy (9.473ms)
+✔ dash starts facing +Z, lasts twelve ticks, edge and cooldown; airborne holds height (3.7361ms)
+✔ pause advances wall ticks while all gameplay clocks and world remain frozen (2.8733ms)
+✔ fall ignores invulnerability, costs exactly one flame and all stock, respawns after 60 (1.7835ms)
+✔ two islands joined by bridge; pad locks flight toward opposite island (12.0897ms)
+✔ ramps climb to Y=3, bell pad lands atop Y=6, tier walls and tower block climbing (9.6071ms)
+✔ wind begins at 1800 and pushes 2 m/s for five seconds; warning precedes gust (45.4968ms)
+✔ drifter steals despite invulnerability; a pulse refunds stolen stock as dropped motes (10.7942ms)
+✔ charm gives 600 ticks, faster movement, dash retrigger and 2700-tick respawn (39.5528ms)
+✔ scheduled entities appear at exact sim ticks and capacities are enforced (232.8998ms)
+✔ score from deposits, last-tick win and no-flames precedence (8.8944ms)
+✔ drop TTL, ID ordering, one hit per tick, 3D pulse and height gates (7.0297ms)
+✔ benchmark stays in the standard night with fixed populations, oil and idle player (234.8082ms)
+✔ ranking orders ties by instant across time zones, caps ten and validates name and score (0.7587ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1674.7711

@@ -1,0 +1,12 @@
+{
+  "scenario": "Each test night initializes its final lamp at 9/10. Only keyboard and menu actions follow.",
+  "wins": [
+    "Đêm 1 · 1000 điểm. Tổng điểm các Đêm đã thắng: 1000.",
+    "Đêm 2 · 1149 điểm. Tổng điểm các Đêm đã thắng: 2149.",
+    "Đêm 3 · 1298 điểm. Tổng điểm các Đêm đã thắng: 3447."
+  ],
+  "dawn_total": 3447,
+  "saved_nights_won": 3,
+  "retry_same_night": true,
+  "errors": []
+}

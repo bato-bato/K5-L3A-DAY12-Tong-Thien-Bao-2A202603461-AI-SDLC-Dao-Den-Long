@@ -5,7 +5,7 @@ import os from 'node:os';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 
-const out='docs/proof/phase3',work='.qa/contract-v12';
+const out=process.env.PROOF_DIR||'docs/proof/phase3',work='.qa/contract-v12';
 mkdirSync(out,{recursive:true});mkdirSync(work,{recursive:true});
 const cases=JSON.parse(readFileSync('scenarios/phase2/cases.json'));
 function cli(cmd,args){

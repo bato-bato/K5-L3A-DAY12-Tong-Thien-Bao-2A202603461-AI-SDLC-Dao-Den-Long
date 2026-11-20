@@ -57,7 +57,7 @@ function shadeMove(s,sh){
   translate(s,sh,sh.dir[0]*2/60,sh.dir[1]*2/60);if(!sh.left)sh.state='wander';
  }else if(sh.state!=='spawning'){
   const d=planar(sh.pos,p.pos);
-  if(sh.state==='wander'&&!released&&d<=12&&!p.respawn)sh.state='chase';
+  if(sh.state==='wander'&&!released&&d<=12&&!s.benchmark&&!p.respawn)sh.state='chase';
   if(sh.state==='chase'&&(d>18||p.respawn))sh.state='wander';
   const speed=s.night===3?4.5:4;
   if(sh.state==='chase'){

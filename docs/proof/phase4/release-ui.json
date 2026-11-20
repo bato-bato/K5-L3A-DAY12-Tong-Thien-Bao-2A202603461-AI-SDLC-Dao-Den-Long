@@ -1,0 +1,13 @@
+{
+  "duplicate_key_detected": true,
+  "binding_and_accessibility_persist": true,
+  "loss_saved_after_restart": {
+    "name": "May_01",
+    "score": 0,
+    "nights_won": 0,
+    "seed": 12,
+    "achieved_at": "2026-11-20T09:40:09.219Z"
+  },
+  "cli_export": true,
+  "errors": []
+}

@@ -34,7 +34,7 @@ function layer(parent,materials,dynamic=false){
  function add(g,c,x,y,z,sx,sy,sz,ry=0,rx=0,rz=0,glow=false){
   const key=g+Number(glow);let batch=batches.get(key);
   if(!batch){
-   const mesh=new T.InstancedMesh(geo[g],glow?materials.glow:materials.solid,dynamic?320:(g==='bough'?4200:2400));
+   const mesh=new T.InstancedMesh(geo[g],glow?materials.glow:materials.solid,dynamic?1024:(g==='bough'?4200:2400));
    mesh.frustumCulled=false;mesh.count=0;parent.add(mesh);batch={mesh};batches.set(key,batch);
   }
   const m=batch.mesh,i=m.count++;m.setMatrixAt(i,pose(x,y,z,sx,sy,sz,ry,rx,rz));m.setColorAt(i,color.setHex(c));
@@ -200,11 +200,13 @@ export function makeWorld(canvas){
   if(canvas.width!==w||canvas.height!==h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   const [x,y,z]=s.player.pos,menu=mode==='menu',eye=yaw*Math.PI/180;
   portraitLight.visible=menu;
-  if(menu){target.set(x+.2,y+1.85,z+4.3);look.set(x-1.48,y+1.32,z);}
+  if(mode==="bench"){const a=t*2*Math.PI/15;target.set(30*Math.cos(a),15,-30*Math.sin(a));look.set(0,0,0);}
+  else if(menu){target.set(x+.2,y+1.85,z+4.3);look.set(x-1.48,y+1.32,z);}
   else{target.set(x+Math.sin(eye)*8.4,Math.max(-2,y)+5.5,z+Math.cos(eye)*8.4);look.set(x-Math.sin(eye)*2,Math.max(-2,y)+1,z-Math.cos(eye)*2);}
-  camera.position.lerp(target,mode===lastMode?.22:1);camera.lookAt(look);lastMode=mode;
+  camera.position.lerp(target,mode===lastMode&&mode!=="bench"?.22:1);camera.lookAt(look);lastMode=mode;
   snowMaterial.uniforms.time.value=t;snowMaterial.uniforms.center.value.copy(camera.position);
-  actors.reset();used=0;body(s,t);let lit=0;
+  snowfall.visible=mode!=="bench"&&!s.reduced;
+  actors.reset();used=0;if(mode==="bench"){put("ball",C.coat,x,y+.85,z,.42,.82,.42);put("hat",C.wood,x,y+1.85,z,.55,.34,.55);}else body(s,t);let lit=0;
   for(const l of s.lanterns){const [x,y,z]=l.pos;lit+=Number(l.lit);
    const blink=l.lit&&l.oil<1800&&s.sim%60>=30;
    put('ball',l.lit&&!blink?C.lit:C.dark,x,y+2.45,z,.64,l.lit?.83:.664,.64,0,0,0,l.lit&&!blink);

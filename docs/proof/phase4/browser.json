@@ -1,0 +1,16 @@
+{
+  "browser": "158.0.8127.36",
+  "width": 1280,
+  "height": 720,
+  "buffer": [
+    1280,
+    720
+  ],
+  "renderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009BC4) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "samples": 692,
+  "elapsed_ms": 5506.799999999999,
+  "mean_fps": 125.6628168809472,
+  "pause": true,
+  "settings_persist": true,
+  "errors": []
+}
