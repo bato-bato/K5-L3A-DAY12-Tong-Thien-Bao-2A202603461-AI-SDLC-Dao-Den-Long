@@ -14,4 +14,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" docs/demo/dao-den-long-web.zip docs/demo/demo.mp4 --verify-tag --title "Đảo Đèn Lồng · Bình minh v1.0.0" --notes-file docs/release.md
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "Đảo Đèn Lồng · Bình minh v1.0.0" --notes-file docs/release.md
+            gh release upload "$GITHUB_REF_NAME" docs/demo/dao-den-long-web.zip docs/demo/demo.mp4 --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" docs/demo/dao-den-long-web.zip docs/demo/demo.mp4 --verify-tag --title "Đảo Đèn Lồng · Bình minh v1.0.0" --notes-file docs/release.md
+          fi
